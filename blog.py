@@ -29,8 +29,20 @@ class BlogHandler(Handler):
         self.render("blog.html")
 
 class NewPostHandler(Handler):
+    def render_newpost(self, subject="", content="", error=""):
+        self.render("newPost.html", subject=subject, content=content, error=error)
     def get(self):
-        self.render("newPost.html")
+        self.render_newpost()
+
+    def post(self):
+        subject = self.request.get("subject")
+        content = self.request.get("content")
+
+        if subject and content:
+            self.write("thanks!")
+        else:
+            error = "We both need a subject and a post"
+            self.render_newpost(subject=subject, content=content, error=error)
 
 app = webapp2.WSGIApplication([('/', MainPage),
                                 ('/blog', BlogHandler),
