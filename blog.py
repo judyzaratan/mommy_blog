@@ -5,7 +5,7 @@ import jinja2
 from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-print "hello"
+
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
                                autoescape = True)
 
@@ -24,5 +24,14 @@ class MainPage(Handler):
     def get(self):
         self.render('index.html')
 
+class BlogHandler(Handler):
+    def get(self):
+        self.render("blog.html")
 
-app = webapp2.WSGIApplication([('/', MainPage)], debug=True)
+class NewPostHandler(Handler):
+    def get(self):
+        self.render("newPost.html")
+
+app = webapp2.WSGIApplication([('/', MainPage),
+                                ('/blog', BlogHandler),
+                                ('/newpost', NewPostHandler)], debug=True)
