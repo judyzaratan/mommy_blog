@@ -1,9 +1,9 @@
 {% extends "index.html"%}
 
 {% block content %}
-{% for entry in posts%}
-<h1>{{entry.subject}}</h1>
-<p>{{entry.content}}</p>
-<br>
-{% endfor %}
+  {% for entry in posts%}
+    <h1>{{entry.subject}}</h1>
+    <p>{{entry.content}}</p>
+    <br>
+  {% endfor %}
 {% endblock %}
