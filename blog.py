@@ -20,17 +20,33 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
+
+# Database
+class Blog(db.Model):
+    subject = db.StringProperty(required = True)
+    content = db.TextProperty(required = True)
+    created = db.DateTimeProperty(auto_now_add = True)
+
 class MainPage(Handler):
     def get(self):
         self.render('index.html')
 
 class BlogHandler(Handler):
     def get(self):
-        self.render("blog.html")
+        posts = db.GqlQuery("SELECT * from Blog ORDER BY created desc")
+        self.render("blog.html", posts = posts)
+
+class PostHandler(Handler):
+    def get(self, blog_id):
+        blog_post = Blog.get_by_id(int(blog_id))
+        print blog_post.subject
+        self.render("post.html", blog_post = blog_post)
+
 
 class NewPostHandler(Handler):
     def render_newpost(self, subject="", content="", error=""):
         self.render("newPost.html", subject=subject, content=content, error=error)
+
     def get(self):
         self.render_newpost()
 
@@ -39,11 +55,16 @@ class NewPostHandler(Handler):
         content = self.request.get("content")
 
         if subject and content:
-            self.write("thanks!")
+            b = Blog(subject = subject, content = content)
+            k = b.put()
+            index = k.id()
+            link = "/blog/" + str(index)
+            self.redirect(link )
         else:
             error = "We both need a subject and a post"
             self.render_newpost(subject=subject, content=content, error=error)
 
 app = webapp2.WSGIApplication([('/', MainPage),
                                 ('/blog', BlogHandler),
+                                ('/blog/(\d+)', PostHandler),
                                 ('/newpost', NewPostHandler)], debug=True)

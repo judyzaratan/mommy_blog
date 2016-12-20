@@ -1,5 +1,9 @@
 {% extends "index.html"%}
 
 {% block content %}
-<h1>Hello!!This is the blog</h1>
+{% for entry in posts%}
+<h1>{{entry.subject}}</h1>
+<p>{{entry.content}}</p>
+<br>
+{% endfor %}
 {% endblock %}
