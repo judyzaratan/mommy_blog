@@ -2,12 +2,29 @@ import os
 import webapp2
 import jinja2
 
+import re
+
 from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
                                autoescape = True)
+
+
+#Regular expressions
+USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+PASSWORD_RE = re.compile(r"^.{3,20}$")
+EMAIL_RE = re.compile(r"^[\S]+@[\S]+.[\S]+$")
+
+#Validity checks on user inputs
+def valid_username(username):
+    return USER_RE.match(username)
+def valid_password(password):
+    return PASSWORD_RE.match(password)
+def valid_email(email):
+    return EMAIL_RE.match(email)
+
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -42,6 +59,47 @@ class PostHandler(Handler):
         print blog_post.subject
         self.render("post.html", blog_post = blog_post)
 
+class SignupHandler(Handler):
+    def get(self):
+        self.render('signup.html')
+        user = self.request.cookies.get('user')
+
+
+    def post(self):
+        #User inputs
+        user_name = self.request.get("username")
+        user_password = self.request.get("password")
+        user_verify = self.request.get("verify")
+        user_email = self.request.get("email")
+
+        # Validity check
+        name = valid_username(user_name)
+        password = valid_password(user_password)
+        email = valid_email(user_email)
+
+        error_username = ""
+        error_password = ""
+        error_email = ""
+
+        if not name:
+            error_username = "That's not a valid username."
+        if not password:
+            error_password = "That's not a valid password."
+        if not email:
+            error_email = "That's not a valid email."
+
+        if(name and password and email):
+            self.response.headers['Content-Type'] = "text/plain"
+            username = str(user_name)
+            self.response.headers.add_header('Set-Cookie', 'username=%s'  % username + '; Path:/')
+        else:
+            self.render("signup.html", username = user_name,
+                                password = user_password,
+                                email = user_email,
+                                error_email = error_email,
+                                error_password = error_password,
+                                error_username = error_username)
+
 
 class NewPostHandler(Handler):
     def render_newpost(self, subject="", content="", error=""):
@@ -67,4 +125,5 @@ class NewPostHandler(Handler):
 app = webapp2.WSGIApplication([('/', MainPage),
                                 ('/blog', BlogHandler),
                                 ('/blog/(\d+)', PostHandler),
+                                ('/blog/signup', SignupHandler),
                                 ('/newpost', NewPostHandler)], debug=True)

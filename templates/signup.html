@@ -1,0 +1,24 @@
+{% extends "index.html"%}
+
+{% block content %}
+<h1>Signup</h1>
+<form method="post">
+  <label for="username">Username</label>
+  <input type="text" name="username" value="{{username}}"> <p style="color: red">{{error_username}}</p>
+  <br>
+  <label for="password">Password</label>
+  <input type="password" name="password" value="{{password}}"> <p style="color: red">{{error_password}}</p>
+
+  <br>
+  <label for="verify">Verify Password</label>
+  <input type="password" name="verify" value="{{verify}}"><p style="color: red">{{error_password}}</p>
+
+  <br>
+  <label for="email">Email(optional)</label><p style="color: red">{{error_email}}</p>
+  <input type="email" name="email" value="{{email}}">
+
+  <br>
+  <input type="submit">
+</form>
+
+{% endblock %}
