@@ -44,6 +44,11 @@ class Blog(db.Model):
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
+class Users(db.Model):
+    user = db.StringProperty(required = True)
+    password = db.StringProperty(required = True)
+    email = db.StringProperty()
+
 class MainPage(Handler):
     def get(self):
         self.render('index.html')
@@ -61,9 +66,11 @@ class PostHandler(Handler):
 
 class SignupHandler(Handler):
     def get(self):
-        self.render('signup.html')
-        user = self.request.cookies.get('user')
-
+        user = self.request.cookies.get('username')
+        if(user == None):
+            self.render('signup.html')
+        else:
+            self.redirect("/blog")
 
     def post(self):
         #User inputs
@@ -75,12 +82,18 @@ class SignupHandler(Handler):
         # Validity check
         name = valid_username(user_name)
         password = valid_password(user_password)
-        email = valid_email(user_email)
+        if(user_email != ""):
+            email = valid_email(user_email)
+        else:
+            email = True
 
         error_username = ""
         error_password = ""
         error_email = ""
 
+
+        if (user_password != user_verify):
+            error_verify = "Passwords do not match."
         if not name:
             error_username = "That's not a valid username."
         if not password:
@@ -88,18 +101,20 @@ class SignupHandler(Handler):
         if not email:
             error_email = "That's not a valid email."
 
-        if(name and password and email):
+        if(name and password and email and user_password == user_verify):
             self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
-            self.response.headers.add_header('Set-Cookie', 'username=%s'  % username + '; Path:/')
+            self.response.headers.add_header('Set-Cookie', 'username=%s' % username + '; Path:/')
+            self.redirect("/")
         else:
             self.render("signup.html", username = user_name,
                                 password = user_password,
                                 email = user_email,
+                                verify = user_verify,
                                 error_email = error_email,
                                 error_password = error_password,
-                                error_username = error_username)
-
+                                error_username = error_username,
+                                error_verify = error_verify)
 
 class NewPostHandler(Handler):
     def render_newpost(self, subject="", content="", error=""):
@@ -117,7 +132,7 @@ class NewPostHandler(Handler):
             k = b.put()
             index = k.id()
             link = "/blog/" + str(index)
-            self.redirect(link )
+            self.redirect(link)
         else:
             error = "We both need a subject and a post"
             self.render_newpost(subject=subject, content=content, error=error)
