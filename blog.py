@@ -1,7 +1,8 @@
 import os
 import webapp2
 import jinja2
-
+import hashlib
+import hmac
 import re
 
 from google.appengine.ext import db
@@ -10,6 +11,22 @@ template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
                                autoescape = True)
+
+#SECRET
+
+SECRET = 'Imthesecret'
+
+def make_secure_val(s):
+    hashed_password = hmac.new(SECRET, s).hexdigest()
+    return '%s|%s' %(password, hashed_password)
+
+def check_secure_val(h):
+    cookie = h.split('|')
+    s = cookie[0]
+    if make_secure_val(s) == cookie[1]:
+        return s
+    else:
+        return None
 
 
 #Regular expressions
@@ -26,16 +43,6 @@ def valid_email(email):
     return EMAIL_RE.match(email)
 
 
-class Handler(webapp2.RequestHandler):
-    def write(self, *a, **kw):
-        self.response.out.write(*a, **kw)
-
-    def render_str(self, template, **params):
-        t = jinja_env.get_template(template)
-        return t.render(params)
-
-    def render(self, template, **kw):
-        self.write(self.render_str(template, **kw))
 
 
 # Database
@@ -49,9 +56,23 @@ class Users(db.Model):
     password = db.StringProperty(required = True)
     email = db.StringProperty()
 
+
+# Request handler
+class Handler(webapp2.RequestHandler):
+    def write(self, *a, **kw):
+        self.response.out.write(*a, **kw)
+
+    def render_str(self, template, **params):
+        t = jinja_env.get_template(template)
+        return t.render(params)
+
+    def render(self, template, **kw):
+        self.write(self.render_str(template, **kw))
+
+# Routes
 class MainPage(Handler):
     def get(self):
-        self.render('index.html')
+        self.render('welcome.html')
 
 class BlogHandler(Handler):
     def get(self):
@@ -70,7 +91,7 @@ class SignupHandler(Handler):
         if(user == None):
             self.render('signup.html')
         else:
-            self.redirect("/blog")
+            self.redirect("/blog/welcome")
 
     def post(self):
         #User inputs
@@ -79,7 +100,7 @@ class SignupHandler(Handler):
         user_verify = self.request.get("verify")
         user_email = self.request.get("email")
 
-        # Validity check
+        # Validity checks
         name = valid_username(user_name)
         password = valid_password(user_password)
         if(user_email != ""):
@@ -91,7 +112,6 @@ class SignupHandler(Handler):
         error_password = ""
         error_email = ""
 
-
         if (user_password != user_verify):
             error_verify = "Passwords do not match."
         if not name:
@@ -101,11 +121,17 @@ class SignupHandler(Handler):
         if not email:
             error_email = "That's not a valid email."
 
+        # Database
         if(name and password and email and user_password == user_verify):
+            user_password_hash =
+
+            u = Users(user = name, password = user_password_hash, email = email)
+            k = u.put()
+
             self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
             self.response.headers.add_header('Set-Cookie', 'username=%s' % username + '; Path:/')
-            self.redirect("/")
+            self.redirect("/blog/welcome")
         else:
             self.render("signup.html", username = user_name,
                                 password = user_password,
@@ -115,6 +141,11 @@ class SignupHandler(Handler):
                                 error_password = error_password,
                                 error_username = error_username,
                                 error_verify = error_verify)
+
+class WelcomeHandler(Handler):
+    def get(self):
+        username = self.request.cookies.get("username")
+        self.render("welcome.html", username = username)
 
 class NewPostHandler(Handler):
     def render_newpost(self, subject="", content="", error=""):
@@ -139,6 +170,7 @@ class NewPostHandler(Handler):
 
 app = webapp2.WSGIApplication([('/', MainPage),
                                 ('/blog', BlogHandler),
+                                ('/blog/welcome', WelcomeHandler),
                                 ('/blog/(\d+)', PostHandler),
                                 ('/blog/signup', SignupHandler),
                                 ('/newpost', NewPostHandler)], debug=True)
