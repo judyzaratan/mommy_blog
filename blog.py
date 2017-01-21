@@ -25,9 +25,6 @@ def check_secure_val(h):
     s = cookie[0]
     if make_secure_val(s) == cookie[1]:
         return s
-    else:
-        return None
-
 
 #Regular expressions to check for usernamde, password, and email validity
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
@@ -71,6 +68,8 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
+
+
 # Routes
 class MainPage(Handler):
     def get(self):
@@ -79,6 +78,7 @@ class MainPage(Handler):
 class BlogHandler(Handler):
     def get(self):
         posts = db.GqlQuery("SELECT * from Blog ORDER BY created desc")
+        print posts
         self.render("blog.html", posts = posts)
 
 class PostHandler(Handler):
@@ -171,8 +171,8 @@ class NewPostHandler(Handler):
             self.render_newpost(subject=subject, content=content, error=error)
 
 app = webapp2.WSGIApplication([('/', MainPage),
-                                ('/blog', BlogHandler),
+                                ('/blog?', BlogHandler),
                                 ('/blog/welcome', WelcomeHandler),
                                 ('/blog/(\d+)', PostHandler),
                                 ('/blog/signup', SignupHandler),
-                                ('/newpost', NewPostHandler)], debug=True)
+                                ('/blog/newpost', NewPostHandler)], debug=True)
