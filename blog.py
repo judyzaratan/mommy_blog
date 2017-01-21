@@ -29,7 +29,7 @@ def check_secure_val(h):
         return None
 
 
-#Regular expressions
+#Regular expressions to check for usernamde, password, and email validity
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 PASSWORD_RE = re.compile(r"^.{3,20}$")
 EMAIL_RE = re.compile(r"^[\S]+@[\S]+.[\S]+$")
@@ -46,11 +46,13 @@ def valid_email(email):
 
 
 # Database
+#Blog Database
 class Blog(db.Model):
     subject = db.StringProperty(required = True)
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
+#Users Database
 class Users(db.Model):
     user = db.StringProperty(required = True)
     password = db.StringProperty(required = True)
@@ -123,9 +125,9 @@ class SignupHandler(Handler):
 
         # Database
         if(name and password and email and user_password == user_verify):
-            user_password_hash =
+            # user_password_hash =
 
-            u = Users(user = name, password = user_password_hash, email = email)
+            u = Users(user = user_name, password = user_password, email = user_email)
             k = u.put()
 
             self.response.headers['Content-Type'] = "text/plain"
