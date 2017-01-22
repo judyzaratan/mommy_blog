@@ -217,10 +217,16 @@ class NewPostHandler(Handler):
             error = "We both need a subject and a post"
             self.render_newpost(subject=subject, content=content, error=error)
 
+class LogoutHandler(Handler):
+    def get(self):
+        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
+        self.redirect('/blog/signup')
+
 app = webapp2.WSGIApplication([('/', MainPage),
                                 ('/blog?', BlogHandler),
                                 ('/blog/welcome', WelcomeHandler),
                                 ('/blog/login', LoginHandler),
                                 ('/blog/(\d+)', PostHandler),
                                 ('/blog/signup', SignupHandler),
+                                ('/blog/logout', LogoutHandler),
                                 ('/blog/newpost', NewPostHandler)], debug=True)
