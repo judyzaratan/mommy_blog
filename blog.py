@@ -22,10 +22,17 @@ SECRET = 'Imthesecret'
 def make_salt():
     return ''.join(random.choice(string.letters) for x in xrange(5))
 
-def make_pw_hash(name, pw):
+def make_pw_hash(name, pw, salt = None):
     ###Your code here
-    salt = make_salt()
-    return hashlib.sha256(name + pw + salt).hexdigest() + "," + salt
+    if not salt:
+        salt = make_salt()
+    h = hashlib.sha256(name + pw + salt).hexdigest()
+    return  '%s,%s' % (salt, h)
+
+def valid_pw(name, password, h):
+    salt = h.split(',')[0]
+    return h == make_pw_hash(name, password, salt)
+
 
 ## Hashing cookies
 def make_secure_val(s):
