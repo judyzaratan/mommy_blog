@@ -23,16 +23,14 @@ def make_salt():
     return ''.join(random.choice(string.letters) for x in xrange(5))
 
 def make_pw_hash(name, pw, salt = None):
-    ###Your code here
     if not salt:
         salt = make_salt()
-    h = hashlib.sha256(name + pw + salt).hexdigest()
-    return  '%s,%s' % (salt, h)
+    hashed_pw = hashlib.sha256(name + pw + salt).hexdigest()
+    return  '%s,%s' % (salt, hashed_pw)
 
-def valid_pw(name, password, h):
+def valid_pw(name, password, hashed_pw):
     salt = h.split(',')[0]
-    return h == make_pw_hash(name, password, salt)
-
+    return hashed_pw == make_pw_hash(name, password, salt)
 
 ## Hashing cookies
 def make_secure_val(s):
