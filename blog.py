@@ -1,10 +1,12 @@
-import os
 import webapp2
 import jinja2
+import os
 import hashlib
 import hmac
 import re
+import random
 
+import string
 from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
@@ -16,6 +18,16 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 
 SECRET = 'Imthesecret'
 
+## Salting functions
+def make_salt():
+    return ''.join(random.choice(string.letters) for x in xrange(5))
+
+def make_pw_hash(name, pw):
+    ###Your code here
+    salt = make_salt()
+    return hashlib.sha256(name + pw + salt).hexdigest() + "," + salt
+
+## Hashing cookies
 def make_secure_val(s):
     hashed_password = hmac.new(SECRET, s).hexdigest()
     return '%s|%s' %(password, hashed_password)
