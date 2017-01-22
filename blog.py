@@ -127,6 +127,7 @@ class SignupHandler(Handler):
         else:
             email = True
 
+        # Validity checks
         error_username = ""
         error_password = ""
         error_email = ""
@@ -141,8 +142,15 @@ class SignupHandler(Handler):
             error_email = "That's not a valid email."
 
         # Database
-        if(name and password and email and user_password == user_verify):
-            # user_password_hash =
+        #Check if user exists
+        username_check = Users.all().filter('user =', user_name).get()
+        if username_check:
+            error_username = "Username already exists"
+        else:
+            username_check = ""
+
+
+        if name and password and email and (user_password == user_verify) and not username_check:
 
             u = Users(user = user_name, password = user_password, email = user_email)
             k = u.put()
@@ -158,12 +166,31 @@ class SignupHandler(Handler):
                                 verify = user_verify,
                                 error_email = error_email,
                                 error_password = error_password,
-                                error_username = error_username,
-                                error_verify = error_verify)
+                                error_username = error_username)
 
 class LoginHandler(Handler):
     def get(self):
         self.render('login.html')
+
+    def post(self):
+        user_name = self.request.get("username")
+        user_password = self.request.get("password")
+
+        database_query = Users.all().filter('user =', user_name).get()
+        if user_name == database_query.user and user_password == database_query.password:
+            self.response.headers['Content-Type'] = "text/plain"
+            username = str(user_name)
+            self.response.headers.add_header('Set-Cookie', 'username=%s' % username + '; Path:/')
+            self.redirect("/blog/welcome")
+        else:
+            error_msg = "Invalid credentials"
+            self.render("login.html", username = user_name,
+                                password = user_password,
+                                error_msg = error_msg)
+
+
+
+
 
 class WelcomeHandler(Handler):
     def get(self):
