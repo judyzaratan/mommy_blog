@@ -161,6 +161,10 @@ class SignupHandler(Handler):
                                 error_username = error_username,
                                 error_verify = error_verify)
 
+class LoginHandler(Handler):
+    def get(self):
+        self.render('login.html')
+
 class WelcomeHandler(Handler):
     def get(self):
         username = self.request.cookies.get("username")
@@ -190,6 +194,7 @@ class NewPostHandler(Handler):
 app = webapp2.WSGIApplication([('/', MainPage),
                                 ('/blog?', BlogHandler),
                                 ('/blog/welcome', WelcomeHandler),
+                                ('/blog/login', LoginHandler),
                                 ('/blog/(\d+)', PostHandler),
                                 ('/blog/signup', SignupHandler),
                                 ('/blog/newpost', NewPostHandler)], debug=True)
