@@ -177,16 +177,15 @@ class LoginHandler(Handler):
         user_password = self.request.get("password")
 
         database_query = Users.all().filter('user =', user_name).get()
-        if user_name == database_query.user and user_password == database_query.password:
+
+        if not database_query and user_name == database_query.user and user_password == database_query.password:
             self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
             self.response.headers.add_header('Set-Cookie', 'username=%s' % username + '; Path:/')
             self.redirect("/blog/welcome")
         else:
             error_msg = "Invalid credentials"
-            self.render("login.html", username = user_name,
-                                password = user_password,
-                                error_msg = error_msg)
+            self.render("login.html", error_msg = error_msg)
 
 
 
