@@ -56,9 +56,6 @@ def valid_password(password):
 def valid_email(email):
     return EMAIL_RE.match(email)
 
-
-
-
 # Database
 #Users
 class User(db.Model):
@@ -94,8 +91,6 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
-
-
 # Routes
 class MainPage(Handler):
     def get(self):
@@ -116,7 +111,8 @@ class PostHandler(Handler):
 class SignupHandler(Handler):
     def get(self):
         user = self.request.cookies.get('username')
-        if(user == None):
+        print user
+        if(user == "" or user == None):
             self.render('signup.html')
         else:
             self.redirect("/blog/welcome")
@@ -224,7 +220,7 @@ class NewPostHandler(Handler):
 
 class LogoutHandler(Handler):
     def get(self):
-        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
+        self.response.headers.add_header('Set-Cookie', 'username=; Path=/')
         self.redirect('/blog/signup')
 
 app = webapp2.WSGIApplication([('/', MainPage),
