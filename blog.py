@@ -213,7 +213,7 @@ class NewPostHandler(Handler):
         content = self.request.get("content")
 
         if subject and content:
-            b = Blog(subject = subject, content = content)
+            b = Post(subject = subject, content = content)
             k = b.put()
             index = k.id()
             link = "/blog/" + str(index)

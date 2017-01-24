@@ -4,6 +4,8 @@
   {% for entry in posts%}
     <h1>{{entry.subject}}</h1>
     <p>{{entry.content}}</p>
+    <p>{{entry.user}}</p>
+    <p>{{entry.created}}</p>
     <br>
   {% endfor %}
 {% endblock %}
