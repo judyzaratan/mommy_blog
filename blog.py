@@ -60,18 +60,27 @@ def valid_email(email):
 
 
 # Database
-#Blog Database
-class Blog(db.Model):
-    subject = db.StringProperty(required = True)
-    content = db.TextProperty(required = True)
-    created = db.DateTimeProperty(auto_now_add = True)
-
-#Users Database
-class Users(db.Model):
+#Users
+class User(db.Model):
     user = db.StringProperty(required = True)
     password = db.StringProperty(required = True)
     email = db.StringProperty()
+#Post
+class Post(db.Model):
+    subject = db.StringProperty(required = True)
+    user = db.ReferenceProperty(User)
+    content = db.TextProperty(required = True)
+    created = db.DateTimeProperty(auto_now_add = True)
 
+#Comments
+class Comments(db.Model):
+    user = db.ReferenceProperty(User)
+    content = db.TextProperty(required = True)
+    created = db.DateTimeProperty(auto_now_add = True)
+
+#Likes
+class Likes(db.Model):
+    user = db.ReferenceProperty(User)
 
 # Request handler
 class Handler(webapp2.RequestHandler):
@@ -94,13 +103,13 @@ class MainPage(Handler):
 
 class BlogHandler(Handler):
     def get(self):
-        posts = db.GqlQuery("SELECT * from Blog ORDER BY created desc")
+        posts = db.GqlQuery("SELECT * from Post ORDER BY created desc")
         print posts
         self.render("blog.html", posts = posts)
 
 class PostHandler(Handler):
     def get(self, blog_id):
-        blog_post = Blog.get_by_id(int(blog_id))
+        blog_post = Post.get_by_id(int(blog_id))
         print blog_post.subject
         self.render("post.html", blog_post = blog_post)
 
@@ -143,7 +152,7 @@ class SignupHandler(Handler):
 
         # Database
         #Check if user exists
-        username_check = Users.all().filter('user =', user_name).get()
+        username_check = User.all().filter('user =', user_name).get()
         if username_check:
             error_username = "Username already exists"
         else:
@@ -152,7 +161,7 @@ class SignupHandler(Handler):
 
         if name and password and email and (user_password == user_verify) and not username_check:
 
-            u = Users(user = user_name, password = user_password, email = user_email)
+            u = User(user = user_name, password = user_password, email = user_email)
             k = u.put()
 
             self.response.headers['Content-Type'] = "text/plain"
@@ -176,7 +185,7 @@ class LoginHandler(Handler):
         user_name = self.request.get("username")
         user_password = self.request.get("password")
 
-        database_query = Users.all().filter('user =', user_name).get()
+        database_query = User.all().filter('user =', user_name).get()
 
         if not database_query and user_name == database_query.user and user_password == database_query.password:
             self.response.headers['Content-Type'] = "text/plain"
@@ -186,10 +195,6 @@ class LoginHandler(Handler):
         else:
             error_msg = "Invalid credentials"
             self.render("login.html", error_msg = error_msg)
-
-
-
-
 
 class WelcomeHandler(Handler):
     def get(self):
