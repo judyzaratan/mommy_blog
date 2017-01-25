@@ -20,6 +20,7 @@ SECRET = 'Imthesecret'
 
 ## Salting functions
 def make_salt():
+    """Creates random five-letter string for salt"""
     return ''.join(random.choice(string.letters) for x in xrange(5))
 
 def make_pw_hash(name, pw, salt = None):
@@ -33,15 +34,16 @@ def valid_pw(name, password, hashed_pw):
     return hashed_pw == make_pw_hash(name, password, salt)
 
 ## Hashing cookies
-def make_secure_val(s):
-    hashed_password = hmac.new(SECRET, s).hexdigest()
-    return '%s|%s' %(password, hashed_password)
 
-def check_secure_val(h):
-    cookie = h.split('|')
-    s = cookie[0]
-    if make_secure_val(s) == cookie[1]:
-        return s
+def make_secure_val(val):
+
+    cookie_h = hmac.new(SECRET, str(val)).hexdigest()
+    return '%s|%s' %(val, cookie_h)
+
+def check_secure_val(cookie_h):
+    cookie = cookie_h.split('|')[0]
+    if make_secure_val(cookie) == cookie_h:
+        return cookie
 
 #Regular expressions to check for usernamde, password, and email validity
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
@@ -163,7 +165,8 @@ class SignupHandler(Handler):
 
             self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
-            self.response.headers.add_header('Set-Cookie', 'username=%s' % username + '; Path:/blog')
+            assign_cookie = make_secure_val(k.key().id())
+            self.response.headers.add_header('Set-Cookie', 'user_id=%s' % assign_cookie + '; Path:/blog')
             self.redirect("/blog/welcome")
         else:
             self.render("signup.html", username = user_name,
@@ -190,7 +193,8 @@ class LoginHandler(Handler):
         if (database_query) and  (user_name == database_query.user and password_check):
             self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
-            self.response.headers.add_header('Set-Cookie', 'username=%s' % username + '; Path:/blog')
+            assign_cookie = make_secure_val(database_query.key().id())
+            self.response.headers.add_header('Set-Cookie', 'user_id=%s' % assign_cookie + '; Path:/blog')
             self.redirect("/blog/welcome")
         else:
             error_msg = "Invalid credentials"
@@ -199,8 +203,11 @@ class LoginHandler(Handler):
 class WelcomeHandler(Handler):
     def get(self):
         print "welcome handler"
-        username = self.request.cookies.get("username")
-        self.render("welcome.html", username = username)
+        cookie = self.request.cookies.get("user_id")
+        id_check = check_secure_val(cookie)
+        if id_check:
+            username = User.get_by_id(int(id_check)).user
+            self.render("welcome.html", username = username)
 
 class NewPostHandler(Handler):
     def render_newpost(self, subject="", content="", error=""):
@@ -225,7 +232,7 @@ class NewPostHandler(Handler):
 
 class LogoutHandler(Handler):
     def get(self):
-        self.response.headers.add_header('Set-Cookie', 'username=; Path=/blog')
+        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/blog')
         self.redirect('/blog/signup')
 
 app = webapp2.WSGIApplication([('/blog', BlogHandler),
