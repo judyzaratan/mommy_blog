@@ -162,7 +162,7 @@ class SignupHandler(Handler):
 
             self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
-            self.response.headers.add_header('Set-Cookie', 'username=%s' % username + '; Path:/')
+            self.response.headers.add_header('Set-Cookie', 'username=%s' % username + '; Path:/blog')
             self.redirect("/blog/welcome")
         else:
             self.render("signup.html", username = user_name,
@@ -186,7 +186,7 @@ class LoginHandler(Handler):
         if not database_query and user_name == database_query.user and user_password == database_query.password:
             self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
-            self.response.headers.add_header('Set-Cookie', 'username=%s' % username + '; Path:/')
+            self.response.headers.add_header('Set-Cookie', 'username=%s' % username + '; Path:/blog')
             self.redirect("/blog/welcome")
         else:
             error_msg = "Invalid credentials"
@@ -194,6 +194,7 @@ class LoginHandler(Handler):
 
 class WelcomeHandler(Handler):
     def get(self):
+        print "welcome handler"
         username = self.request.cookies.get("username")
         self.render("welcome.html", username = username)
 
@@ -220,11 +221,10 @@ class NewPostHandler(Handler):
 
 class LogoutHandler(Handler):
     def get(self):
-        self.response.headers.add_header('Set-Cookie', 'username=; Path=/')
+        self.response.headers.add_header('Set-Cookie', 'username=; Path=/blog')
         self.redirect('/blog/signup')
 
-app = webapp2.WSGIApplication([('/', MainPage),
-                                ('/blog?', BlogHandler),
+app = webapp2.WSGIApplication([('/blog', BlogHandler),
                                 ('/blog/welcome', WelcomeHandler),
                                 ('/blog/login', LoginHandler),
                                 ('/blog/(\d+)', PostHandler),
