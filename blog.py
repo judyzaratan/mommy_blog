@@ -29,7 +29,7 @@ def make_pw_hash(name, pw, salt = None):
     return  '%s,%s' % (salt, hashed_pw)
 
 def valid_pw(name, password, hashed_pw):
-    salt = h.split(',')[0]
+    salt = hashed_pw.split(',')[0]
     return hashed_pw == make_pw_hash(name, password, salt)
 
 ## Hashing cookies
@@ -156,8 +156,9 @@ class SignupHandler(Handler):
 
 
         if name and password and email and (user_password == user_verify) and not username_check:
+            hash_pw = make_pw_hash(user_name, user_password)
 
-            u = User(user = user_name, password = user_password, email = user_email)
+            u = User(user = user_name, password = hash_pw, email = user_email)
             k = u.put()
 
             self.response.headers['Content-Type'] = "text/plain"
@@ -182,8 +183,11 @@ class LoginHandler(Handler):
         user_password = self.request.get("password")
 
         database_query = User.all().filter('user =', user_name).get()
+        password_check = valid_pw(user_name, user_password, database_query.password)
+        print "password check" + str(password_check)
 
-        if not database_query and user_name == database_query.user and user_password == database_query.password:
+
+        if (database_query) and  (user_name == database_query.user and password_check):
             self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
             self.response.headers.add_header('Set-Cookie', 'username=%s' % username + '; Path:/blog')

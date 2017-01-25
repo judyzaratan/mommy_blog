@@ -40,4 +40,5 @@ Local Deployment
  dev_appserver.py [PATH_TO_APP]
 ```
 Open browser and link to http://localhost:8080/blog
+
 Live example:
