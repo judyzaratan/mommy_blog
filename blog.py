@@ -15,6 +15,14 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
                                autoescape = True)
 
 #SECRET
+access_pages_in = [('/', 'Home'),
+('/newpost', 'New Post'),
+('/logout', 'Sign Out')]
+
+access_pages_out = [('/', 'Home'),
+('/login', 'Log In'),
+('/signup', 'Sign Up')]
+
 
 SECRET = 'Imthesecret'
 
@@ -117,7 +125,7 @@ class SignupHandler(Handler):
         if(user == "" or user == None):
             self.render('signup.html')
         else:
-            self.redirect("/blog/welcome")
+            self.redirect("/welcome")
 
     def post(self):
         #User inputs
@@ -166,8 +174,8 @@ class SignupHandler(Handler):
             self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
             assign_cookie = make_secure_val(u.key().id())
-            self.response.headers.add_header('Set-Cookie', 'user_id=%s' % assign_cookie + '; Path:/blog')
-            self.redirect("/blog/welcome")
+            self.response.headers.add_header('Set-Cookie', 'user_id=%s' % assign_cookie + '; Path:/')
+            self.redirect("/welcome")
         else:
             self.render("signup.html", username = user_name,
                                 password = user_password,
@@ -194,8 +202,8 @@ class LoginHandler(Handler):
             self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
             assign_cookie = make_secure_val(database_query.key().id())
-            self.response.headers.add_header('Set-Cookie', 'user_id=%s' % assign_cookie + '; Path:/blog')
-            self.redirect("/blog/welcome")
+            self.response.headers.add_header('Set-Cookie', 'user_id=%s' % assign_cookie + '; Path:/')
+            self.redirect("/welcome")
         else:
             error_msg = "Invalid credentials"
             self.render("login.html", error_msg = error_msg)
@@ -224,7 +232,7 @@ class NewPostHandler(Handler):
             b = Post(subject = subject, content = content)
             k = b.put()
             index = k.id()
-            link = "/blog/" + str(index)
+            link = "/" + str(index)
             self.redirect(link)
         else:
             error = "We both need a subject and a post"
@@ -232,13 +240,13 @@ class NewPostHandler(Handler):
 
 class LogoutHandler(Handler):
     def get(self):
-        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/blog')
-        self.redirect('/blog/signup')
+        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
+        self.redirect('/signup')
 
-app = webapp2.WSGIApplication([('/blog', BlogHandler),
-                                ('/blog/welcome', WelcomeHandler),
-                                ('/blog/login', LoginHandler),
-                                ('/blog/(\d+)', PostHandler),
-                                ('/blog/signup', SignupHandler),
-                                ('/blog/logout', LogoutHandler),
-                                ('/blog/newpost', NewPostHandler)], debug=True)
+app = webapp2.WSGIApplication([('/', BlogHandler),
+                                ('/welcome', WelcomeHandler),
+                                ('/login', LoginHandler),
+                                ('/(\d+)', PostHandler),
+                                ('/signup', SignupHandler),
+                                ('/logout', LogoutHandler),
+                                ('/newpost', NewPostHandler)], debug=True)

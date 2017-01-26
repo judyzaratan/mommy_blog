@@ -25,10 +25,16 @@
     <nav class="navbar">
         <!-- Collect the nav links, forms, and other content for toggling -->
            <ul class="nav nav-tabs">
-             <li><a href="/blog">Home</a></li>
-             <li><a href="/blog/newpost">New Post</a></li>
-             <li><a href="/blog/logout">Sign Out</a></li>
+             <li><a href="/">Home</a></li>
+             <li><a href="/newpost">New Post</a></li>
+             <li><a href="/login">Sign In</a></li>
+             <li><a href="/logout">Sign Out</a></li>
            </ul>
+           <!-- <ul class="nav nav-tabs">
+              {% for href, caption in links %}
+            <li><a href="{{ href }}">{{ caption }}</a></li>
+            {% endfor %}
+          </ul> -->
     </nav>
 {% block content%}
   <h1>Welcome {{username}}</h1>
