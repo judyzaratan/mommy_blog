@@ -24,6 +24,7 @@ def make_salt():
     return ''.join(random.choice(string.letters) for x in xrange(5))
 
 def make_pw_hash(name, pw, salt = None):
+    """Function hashes password"""
     if not salt:
         salt = make_salt()
     hashed_pw = hashlib.sha256(name + pw + salt).hexdigest()
@@ -34,9 +35,8 @@ def valid_pw(name, password, hashed_pw):
     return hashed_pw == make_pw_hash(name, password, salt)
 
 ## Hashing cookies
-
 def make_secure_val(val):
-
+    """Uses database id to create a cookie hash"""
     cookie_h = hmac.new(SECRET, str(val)).hexdigest()
     return '%s|%s' %(val, cookie_h)
 
@@ -165,7 +165,7 @@ class SignupHandler(Handler):
 
             self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
-            assign_cookie = make_secure_val(k.key().id())
+            assign_cookie = make_secure_val(u.key().id())
             self.response.headers.add_header('Set-Cookie', 'user_id=%s' % assign_cookie + '; Path:/blog')
             self.redirect("/blog/welcome")
         else:
