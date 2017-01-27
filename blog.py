@@ -25,7 +25,9 @@ access_pages_out = [('/', 'Home'),
 
 
 SECRET = 'Imthesecret'
-
+def render_str(template, **params):
+    t = jinja_env.get_template(template)
+    return t.render(params)
 ## Salting functions
 def make_salt():
     """Creates random five-letter string for salt"""
@@ -42,7 +44,7 @@ def valid_pw(name, password, hashed_pw):
     salt = hashed_pw.split(',')[0]
     return hashed_pw == make_pw_hash(name, password, salt)
 
-## Hashing cookies
+## Securing cookies
 def make_secure_val(val):
     """Uses database id to create a cookie hash"""
     cookie_h = hmac.new(SECRET, str(val)).hexdigest()
@@ -66,8 +68,8 @@ def valid_password(password):
 def valid_email(email):
     return EMAIL_RE.match(email)
 
-# Database
-#Users
+# Datastore definitions
+#User
 class User(db.Model):
     user = db.StringProperty(required = True)
     password = db.StringProperty(required = True)
@@ -79,7 +81,7 @@ class Post(db.Model):
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
-#Comments
+#Comment
 class Comments(db.Model):
     user = db.ReferenceProperty(User)
     content = db.TextProperty(required = True)
@@ -91,10 +93,34 @@ class Likes(db.Model):
 
 # Request handler
 class Handler(webapp2.RequestHandler):
+    """Initialize handler instance with req and res objects"""
+    """Adds user_id object"""
+    def initialize(self, *a, **kw):
+        webapp2.RequestHandler.initialize(self, *a, **kw)
+        uid = self.read_secure_cookie('user_id')
+        self.user = uid and User.get_by_id(int(uid))
+        print "initialized"
+
+
+    """Sets cookie in response header"""
+    def set_secure_cookie(self, name, val):
+        cookie_val = make_secure_val(val)
+        self.response.headers.add_header(
+            'Set-Cookie',
+            '%s=%s; Path=/' % (name, cookie_val))
+
+    """Validates cookie read in response header"""
+    def read_secure_cookie(self, name):
+        cookie_val = self.request.cookies.get(name)
+        return cookie_val and check_secure_val(cookie_val)
+
+    """Simplifies write function"""
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
 
+    """Render parameters on templates"""
     def render_str(self, template, **params):
+        params['user'] = self.user
         t = jinja_env.get_template(template)
         return t.render(params)
 
@@ -102,25 +128,29 @@ class Handler(webapp2.RequestHandler):
         self.write(self.render_str(template, **kw))
 
 # Routes
-class MainPage(Handler):
-    def get(self):
-        self.render('welcome.html')
+# class MainPage(Handler):
+#     def get(self):
+#         self.render('welcome.html')
 
+
+#Page displays blog posts
 class BlogHandler(Handler):
     def get(self):
         posts = db.GqlQuery("SELECT * from Post ORDER BY created desc")
         print posts
         self.render("blog.html", posts = posts)
 
+#Single post display
 class PostHandler(Handler):
     def get(self, blog_id):
         blog_post = Post.get_by_id(int(blog_id))
         print blog_post.subject
         self.render("post.html", blog_post = blog_post)
 
+#Signup
 class SignupHandler(Handler):
     def get(self):
-        user = self.request.cookies.get('username')
+        user = self.request.cookies.get('user_id')
         print user
         if(user == "" or user == None):
             self.render('signup.html')
@@ -194,8 +224,9 @@ class LoginHandler(Handler):
         user_password = self.request.get("password")
 
         database_query = User.all().filter('user =', user_name).get()
-        password_check = valid_pw(user_name, user_password, database_query.password)
-        print "password check" + str(password_check)
+        if database_query:
+            password_check = valid_pw(user_name, user_password, database_query.password)
+        # print "password check" + str(password_check)
 
 
         if (database_query) and  (user_name == database_query.user and password_check):
@@ -222,14 +253,22 @@ class NewPostHandler(Handler):
         self.render("newPost.html", subject=subject, content=content, error=error)
 
     def get(self):
-        self.render_newpost()
+        if self.user:
+            self.render_newpost()
+        else:
+            self.redirect("/login")
 
     def post(self):
         subject = self.request.get("subject")
         content = self.request.get("content")
 
+        cookie = self.request.cookies.get("user_id")
+        id_check = check_secure_val(cookie)
+        if id_check:
+            user = User.get_by_id(int(id_check))
+
         if subject and content:
-            b = Post(subject = subject, content = content)
+            b = Post(subject = subject, content = content, user = user)
             k = b.put()
             index = k.id()
             link = "/" + str(index)

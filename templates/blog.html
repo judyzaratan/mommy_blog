@@ -4,7 +4,7 @@
   {% for entry in posts%}
     <h1>{{entry.subject}}</h1>
     <p>{{entry.content}}</p>
-    <p>{{entry.user}}</p>
+    <p>{{entry.user.user}}</p>
     <p>{{entry.created}}</p>
     <button type="button" name="button">Edit</button>
     <button type="button" name="button">Delete</button>
