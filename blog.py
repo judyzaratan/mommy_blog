@@ -82,8 +82,9 @@ class Post(db.Model):
     created = db.DateTimeProperty(auto_now_add = True)
 
 #Comment
-class Comments(db.Model):
+class Comment(db.Model):
     user = db.ReferenceProperty(User)
+    post = db.ReferenceProperty(Post)
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
@@ -139,7 +140,9 @@ class BlogHandler(Handler):
         posts = Post.all().order('-created')
         self.render("blog.html", posts = posts, user = self.user)
     def post(self):
-        print 'Edit' + self.request.get('task')
+        post = self.request.get('post_comment')
+        task = self.request.get('task')
+        print post + task
 
 
 
@@ -280,6 +283,24 @@ class NewPostHandler(Handler):
             error = "We both need a subject and a post"
             self.render_newpost(subject=subject, content=content, error=error)
 
+class CommentHandler(Handler):
+    def get(self):
+        self.render("comment.html")
+
+    def post(self):
+        path = self.request.get('button')
+        comment = self.request.get('comment')
+        p = self.request.get('post_comment')
+        post_id = Post.get_by_id(int(p))
+        user = self.user
+        if path == "Submit":
+            o = Comment(user = user, content = comment, post = post_id)
+            k = o.put()
+            self.redirect('/')
+
+        if path == "Cancel":
+            self.redirect('/')
+
 class LogoutHandler(Handler):
     def get(self):
         self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
@@ -287,8 +308,9 @@ class LogoutHandler(Handler):
 
 app = webapp2.WSGIApplication([('/', BlogHandler),
                                 ('/welcome', WelcomeHandler),
-                                ('/login', LoginHandler),
-                                ('/(\d+)', PostHandler),
                                 ('/signup', SignupHandler),
+                                ('/login', LoginHandler),
                                 ('/logout', LogoutHandler),
-                                ('/newpost', NewPostHandler)], debug=True)
+                                ('/(\d+)', PostHandler),
+                                ('/newpost', NewPostHandler),
+                                ('/comment', CommentHandler)], debug=True)
