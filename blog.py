@@ -286,7 +286,8 @@ class CommentHandler(Handler):
     def post(self):
         path = self.request.get('button')
         comment = self.request.get('comment')
-        p = self.request.get('post_comment')
+        p = self.request.get('post')
+        print p + 'comment'
         post_id = Post.get_by_id(int(p))
         user = self.user
         if path == "Submit":
