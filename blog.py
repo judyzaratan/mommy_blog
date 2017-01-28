@@ -136,9 +136,12 @@ class Handler(webapp2.RequestHandler):
 #Page displays blog posts
 class BlogHandler(Handler):
     def get(self):
-        posts = db.GqlQuery("SELECT * from Post ORDER BY created desc")
-        print posts
-        self.render("blog.html", posts = posts)
+        posts = Post.all().order('-created')
+        self.render("blog.html", posts = posts, user = self.user)
+    def post(self):
+        print 'Edit' + self.request.get('task')
+
+
 
 #Single post display
 class PostHandler(Handler):
