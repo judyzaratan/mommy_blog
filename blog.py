@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import re
 import random
+import urllib
 
 import string
 from google.appengine.ext import db
@@ -100,8 +101,6 @@ class Handler(webapp2.RequestHandler):
         webapp2.RequestHandler.initialize(self, *a, **kw)
         uid = self.read_secure_cookie('user_id')
         self.user = uid and User.get_by_id(int(uid))
-        print "initialized"
-
 
     """Sets cookie in response header"""
     def set_secure_cookie(self, name, val):
@@ -128,23 +127,20 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
-# Routes
-# class MainPage(Handler):
-#     def get(self):
-#         self.render('welcome.html')
-
-
 #Page displays blog posts
 class BlogHandler(Handler):
     def get(self):
         posts = Post.all().order('-created')
         self.render("blog.html", posts = posts, user = self.user)
+
     def post(self):
         post = self.request.get('post_comment')
         task = self.request.get('task')
+        if task == 'Comment':
+            query_params = {'post': post}
+            link = '/comment?'
+            self.redirect(link + urllib.urlencode(query_params))
         print post + task
-
-
 
 #Single post display
 class PostHandler(Handler):
