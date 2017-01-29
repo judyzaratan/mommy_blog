@@ -146,8 +146,12 @@ class BlogHandler(Handler):
 class PostHandler(Handler):
     def get(self, blog_id):
         blog_post = Post.get_by_id(int(blog_id))
-        print blog_post.subject
-        self.render("post.html", blog_post = blog_post)
+        post_key = blog_post.key()
+        print str(post_key)
+        post = db.get(post_key)
+        comments = Comment.all()
+        comments_in_post = comments.filter('post =', post)
+        self.render("post.html", blog_post = blog_post, comments_in_post = comments_in_post)
 
 #Signup
 class SignupHandler(Handler):
@@ -296,7 +300,8 @@ class CommentHandler(Handler):
             self.redirect('/')
 
         if path == "Cancel":
-            self.redirect('/')
+            link = '/' + p
+            self.redirect(link)
 
 class LogoutHandler(Handler):
     def get(self):

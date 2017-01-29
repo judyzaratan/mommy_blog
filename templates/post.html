@@ -4,6 +4,9 @@
 
   <h1>{{blog_post.subject}}</h1>
   <p>{{blog_post.content}}</p>
-  <p>{{blog_post.comments}}</p>
+  <h1>Comments</h1>
+   {% for comment in comments_in_post %}
+   <p>{{comment.content}}</p>
+   {% endfor %}
 
-{% endblock %}
+  {% endblock %}
