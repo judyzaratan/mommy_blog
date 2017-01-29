@@ -1,6 +1,8 @@
 {% extends "index.html"%}
 
 {% block content %}
+<div class="blog">
+
   {% for entry in posts%}
   <h1>{{entry.subject}}</h1>
   <p>{{entry.content}}</p>
@@ -18,4 +20,5 @@
     </form>
   {% endif %}
   {% endfor %}
+</div>
 {% endblock %}
