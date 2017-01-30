@@ -285,7 +285,10 @@ class NewPostHandler(Handler):
 
 class CommentHandler(Handler):
     def get(self):
-        self.render("comment.html")
+        if self.user:
+            self.render("comment.html")
+        else:
+            self.redirect("/")
 
     def post(self):
         path = self.request.get('button')
