@@ -2,21 +2,21 @@
 
 {% block content %}
 <div class="blog">
-
   {% for entry in posts%}
   <h1>{{entry.subject}}</h1>
   <p>{{entry.content}}</p>
   <p>{{entry.user.user}}</p>
   <p>{{entry.created}}</p>
   {% set id = entry.key().id()%}
-  <p>Yo yo yo{{id}}{{user.user}}</p>
   {% if user %}
     <form id="{{id}}" method="post">
       <input type="hidden" name="post_comment" value="{{id}}">
-      <button class="btn btn-primary {{show_user}}" type="submit" value="Edit" name="task">Edit</button>
-      <button class="btn btn-primary {{show_user}}" type="submit" value="Delete"name="task">Delete</button>
-      <button class="btn btn-primary {{is_active}}" type="submit" value="Comment" name="task">Comment</button>
-      <button class="btn btn-primary {{hide_user}} {{is_active}}" value="Like" type="submit" name="task">Likes</button>
+      {% if user.user == entry.user.user %}
+        <button class="btn btn-primary" type="submit" value="Edit" name="task">Edit</button>
+        <button class="btn btn-primary" type="submit" value="Delete"name="task">Delete</button>
+      {% endif %}
+      <button class="btn btn-primary" type="submit" value="Comment" name="task">Comment</button>
+      <button class="btn btn-primary" type="submit" value="Like" name="task">Like</button>
     </form>
   {% endif %}
   {% endfor %}

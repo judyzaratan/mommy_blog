@@ -92,6 +92,7 @@ class Comment(db.Model):
 #Likes
 class Likes(db.Model):
     user = db.ReferenceProperty(User)
+    post = db.ReferenceProperty(Post)
 
 # Request handler
 class Handler(webapp2.RequestHandler):
@@ -131,7 +132,14 @@ class Handler(webapp2.RequestHandler):
 class BlogHandler(Handler):
     def get(self):
         posts = Post.all().order('-created')
-        self.render("blog.html", posts = posts, user = self.user)
+        likes = Likes.all()
+        like_obj = {}
+        count = 0;
+        for like in likes:
+            count = count + 1
+
+        print count
+        self.render("blog.html", posts = posts, user = self.user, likes = likes)
 
     def post(self):
         post = self.request.get('post_comment')
@@ -140,7 +148,10 @@ class BlogHandler(Handler):
             query_params = {'post': post}
             link = '/comment?'
             self.redirect(link + urllib.urlencode(query_params))
-        print post + task
+        if task == 'Like':
+            post_id = Post.get_by_id(int(post))
+            c = Likes(user = self.user, post = post_id)
+            c.put()
 
 #Single post display
 class PostHandler(Handler):
