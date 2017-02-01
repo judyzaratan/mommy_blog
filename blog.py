@@ -82,6 +82,8 @@ class Post(db.Model):
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
+
+
 #Comment
 class Comment(db.Model):
     user = db.ReferenceProperty(User)
@@ -92,7 +94,7 @@ class Comment(db.Model):
 #Likes
 class Likes(db.Model):
     user = db.ReferenceProperty(User)
-    post = db.ReferenceProperty(Post)
+    post = db.ReferenceProperty(Post, collection_name="posts_set")
 
 # Request handler
 class Handler(webapp2.RequestHandler):
@@ -132,14 +134,8 @@ class Handler(webapp2.RequestHandler):
 class BlogHandler(Handler):
     def get(self):
         posts = Post.all().order('-created')
-        likes = Likes.all()
-        like_obj = {}
-        count = 0;
-        for like in likes:
-            count = count + 1
-
-        print count
-        self.render("blog.html", posts = posts, user = self.user, likes = likes)
+        # likes = Likes.posts_set.get()
+        self.render("blog.html", posts = posts, user = self.user)
 
     def post(self):
         post = self.request.get('post_comment')
@@ -152,6 +148,7 @@ class BlogHandler(Handler):
             post_id = Post.get_by_id(int(post))
             c = Likes(parent = post_id, user = self.user, post = post_id)
             c.put()
+            self.redirect("/")
 
 #Single post display
 class PostHandler(Handler):
