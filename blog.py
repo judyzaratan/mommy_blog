@@ -150,7 +150,7 @@ class BlogHandler(Handler):
             self.redirect(link + urllib.urlencode(query_params))
         if task == 'Like':
             post_id = Post.get_by_id(int(post))
-            c = Likes(user = self.user, post = post_id)
+            c = Likes(parent = post_id, user = self.user, post = post_id)
             c.put()
 
 #Single post display

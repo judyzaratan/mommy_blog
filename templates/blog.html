@@ -16,7 +16,7 @@
         <button class="btn btn-primary" type="submit" value="Delete"name="task">Delete</button>
       {% endif %}
       <button class="btn btn-primary" type="submit" value="Comment" name="task">Comment</button>
-      <button class="btn btn-primary" type="submit" value="Like" name="task">Like</button>
+      <button class="btn btn-primary" {{disable}} type="submit" value="Like" name="task">Like</button>
     </form>
   {% endif %}
   {% endfor %}
