@@ -84,6 +84,7 @@ class Post(db.Model):
 
 
 
+
 #Comment
 class Comment(db.Model):
     user = db.ReferenceProperty(User)
@@ -94,7 +95,7 @@ class Comment(db.Model):
 #Likes
 class Likes(db.Model):
     user = db.ReferenceProperty(User)
-    post = db.ReferenceProperty(Post, collection_name="posts_set")
+    post = db.ReferenceProperty(Post, collection_name="likes_set")
 
 # Request handler
 class Handler(webapp2.RequestHandler):
@@ -134,8 +135,13 @@ class Handler(webapp2.RequestHandler):
 class BlogHandler(Handler):
     def get(self):
         posts = Post.all().order('-created')
-        # likes = Likes.posts_set.get()
-        self.render("blog.html", posts = posts, user = self.user)
+        likes = Likes.all()
+        for post in posts:
+            for like in likes.ancestor(post.key()):
+                print like.user.user
+                print "it got here"
+
+        self.render("blog.html", posts = posts, user = self.user, likes = likes)
 
     def post(self):
         post = self.request.get('post_comment')

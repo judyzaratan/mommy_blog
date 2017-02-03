@@ -7,23 +7,29 @@
     <p>{{entry.content}}</p>
     <p>{{entry.user.user}}</p>
     <p>{{entry.created}}</p>
-    {% for likes in entry.posts_set%}
-          <p>{{likes.user.user}}</p>
-    {% endfor %}
     {% set id = entry.key().id()%}
     {% if user %}
       <form id="{{id}}" method="post">
         <input type="hidden" name="post_comment" value="{{id}}">
+        <p>this is the condition {{user.user==entry.user.user}}</p>
         {% if user.user == entry.user.user %}
+          <p>user is {{user.user}}</p>
+          <p>entry user is {{entry.user.user}}</p>
           <button class="btn btn-primary" type="submit" value="Edit" name="task">Edit</button>
           <button class="btn btn-primary" type="submit" value="Delete"name="task">Delete</button>
         {% endif %}
+
+    {% if likes.ancestor(entry.key()) %}
+      <p>{% set disable = "disabled" %}</p>
+      {% else %}
+        <p>{% set disable="" %}</p>
+    {% endif %}
+        <p>Disable condition {{disable}}</p>
         <button class="btn btn-primary" type="submit" value="Comment" name="task">Comment</button>
-        <button class="btn btn-primary" {{disable}} type="submit" value="Like" name="task">Like</button>
+        <button class="btn btn-primary {{disable}}" type="submit" value="Like" name="task">Like</button>
+    {% endif %}
       </form>
-      {% endif %}
+
   {% endfor %}
-
-
 </div>
 {% endblock %}
