@@ -10,28 +10,27 @@ import urllib
 import string
 from google.appengine.ext import db
 
+#SECRET for securing cookies
+SECRET = 'Imthesecret'
+
+### JINJA
+# Specifies path directory for html templates for jinja
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 
+# Jinja templating environment
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
                                autoescape = True)
 
-#SECRET
-access_pages_in = [('/', 'Home'),
-('/newpost', 'New Post'),
-('/logout', 'Sign Out')]
-
-access_pages_out = [('/', 'Home'),
-('/login', 'Log In'),
-('/signup', 'Sign Up')]
-
-
-SECRET = 'Imthesecret'
+# Returns rendered template with dictionary input params
 def render_str(template, **params):
     t = jinja_env.get_template(template)
     return t.render(params)
-## Salting functions
+
+### Salting functions
 def make_salt():
-    """Creates random five-letter string for salt"""
+    """
+    Creates random five-letter string for salt
+    """
     return ''.join(random.choice(string.letters) for x in xrange(5))
 
 def make_pw_hash(name, pw, salt = None):
@@ -75,6 +74,7 @@ class User(db.Model):
     user = db.StringProperty(required = True)
     password = db.StringProperty(required = True)
     email = db.StringProperty()
+
 #Post
 class Post(db.Model):
     subject = db.StringProperty(required = True)
@@ -82,8 +82,9 @@ class Post(db.Model):
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
-
-
+    """ Renders individual post using post template"""
+    def render(self):
+        return render_str("post.html", blog_post = self)
 
 #Comment
 class Comment(db.Model):
@@ -98,9 +99,9 @@ class Likes(db.Model):
     post = db.ReferenceProperty(Post, collection_name="likes_set")
 
 # Request handler
+"""Initialize handler instance with req and res objects"""
+"""Adds user object in response"""
 class Handler(webapp2.RequestHandler):
-    """Initialize handler instance with req and res objects"""
-    """Adds user_id object"""
     def initialize(self, *a, **kw):
         webapp2.RequestHandler.initialize(self, *a, **kw)
         uid = self.read_secure_cookie('user_id')
@@ -122,12 +123,13 @@ class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
 
-    """Render parameters on templates"""
+    """Render dictionary parameters on templates as text"""
     def render_str(self, template, **params):
         params['user'] = self.user
         t = jinja_env.get_template(template)
         return t.render(params)
 
+    """Writes rendered template to response"""
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
@@ -135,13 +137,14 @@ class Handler(webapp2.RequestHandler):
 class BlogHandler(Handler):
     def get(self):
         posts = Post.all().order('-created')
-        likes = Likes.all()
-        for post in posts:
-            for like in likes.ancestor(post.key()):
-                print like.user.user
-                print "it got here"
+        print 'it got to the blog handler'
+        # likes = Likes.all()
+        # for post in posts:
+        #     for like in likes.ancestor(post.key()):
+        #         print like.user.user
+        #         print "it got here"
 
-        self.render("blog.html", posts = posts, user = self.user, likes = likes)
+        self.render("blog.html", posts = posts)
 
     def post(self):
         post = self.request.get('post_comment')
@@ -264,6 +267,7 @@ class WelcomeHandler(Handler):
         print "welcome handler"
         cookie = self.request.cookies.get("user_id")
         id_check = check_secure_val(cookie)
+        print id_check
         if id_check:
             username = User.get_by_id(int(id_check)).user
             self.render("welcome.html", username = username)

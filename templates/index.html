@@ -32,6 +32,7 @@
            <ul class="nav nav-tabs">
              <li><a href="/">Home</a></li>
              {% if user %}
+             <span>Signed in as {{user.user}}</span>
              <li><a href="/newpost">New Post</a></li>
              <li><a href="/logout">Sign Out</a></li>
              {% else %}
