@@ -96,6 +96,10 @@ class Comment(db.Model):
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
+    """ Renders individual comment using comment template"""
+    def render(self):
+        return render_str("comment.html", comment = self)
+
 #Likes
 class Likes(db.Model):
     user = db.ReferenceProperty(User)
@@ -140,13 +144,6 @@ class Handler(webapp2.RequestHandler):
 class BlogHandler(Handler):
     def get(self):
         posts = Post.all().order('-created')
-        print 'it got to the blog handler'
-        # likes = Likes.all()
-        # for post in posts:
-        #     for like in likes.ancestor(post.key()):
-        #         print like.user.user
-        #         print "it got here"
-
         self.render("blog.html", posts = posts)
 
     def post(self):
@@ -155,7 +152,7 @@ class BlogHandler(Handler):
         print task
         if task == 'comment':
             query_params = {'post': post_id}
-            link = '/comment?'
+            link = '/newcomment?'
             self.redirect(link + urllib.urlencode(query_params))
         if task == 'like':
             post_id = Post.get_by_id(int(post))
@@ -308,7 +305,7 @@ class NewPostHandler(Handler):
 class CommentHandler(Handler):
     def get(self):
         if self.user:
-            self.render("comment.html")
+            self.render("newComment.html")
         else:
             self.redirect("/")
 
@@ -320,7 +317,7 @@ class CommentHandler(Handler):
         post_id = Post.get_by_id(int(p))
         user = self.user
         if path == "Submit":
-            o = Comment(user = user, content = comment, post = post_id)
+            o = Comment(parent=post_id, user = user, content = comment, post = post_id)
             k = o.put()
             self.redirect('/')
 
@@ -340,4 +337,4 @@ app = webapp2.WSGIApplication([('/', BlogHandler),
                                 ('/logout', LogoutHandler),
                                 ('/(\d+)', PostHandler),
                                 ('/newpost', NewPostHandler),
-                                ('/comment', CommentHandler)], debug=True)
+                                ('/newcomment', CommentHandler)], debug=True)

@@ -2,4 +2,9 @@
 
 {% block content %}
   {{post.render() | safe}}
+
+  <h2>Comments</h2>
+  {% for comment in comments_in_post%}
+    {{comment.render()|safe}}
+    {% endfor %}
 {% endblock %}
