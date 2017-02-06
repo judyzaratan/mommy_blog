@@ -18,6 +18,9 @@ URLs to static files, must be included when using google app engine
 - Python
 - HTML
 
+### Database
+ - Google Cloud Datastore - a NoSQL document database
+
 ### Built With
  - webapp2 - web application framework
  - jinja2 - templating language for python

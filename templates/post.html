@@ -1,13 +1,5 @@
-
-<div class="post">
-  <h1>Post</h1>
-  <h3>{{blog_post.subject}}</h1>
-  <p>{{blog_post.content}}</p>
-  <p>{{blog_post.user.user}}</p>
-  <!-- <h1>Comments</h1>
-   {% for comment in comments_in_post %}
-     <p>{{comment.content}}</p>
-     <p>{{comment.created}}</p>
-     <p>{{comment.user.user}}</p> -->
-   {% endfor %}
- </div>
+  <div class="post">
+    <h3>{{blog_post.subject}}</h1>
+    <p>{{blog_post.content}}</p>
+    <p>Posted by: {{blog_post.user.user}}</p>
+   </div>

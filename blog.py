@@ -34,13 +34,16 @@ def make_salt():
     return ''.join(random.choice(string.letters) for x in xrange(5))
 
 def make_pw_hash(name, pw, salt = None):
-    """Function hashes password"""
+    """
+    Hashes password
+    """
     if not salt:
         salt = make_salt()
     hashed_pw = hashlib.sha256(name + pw + salt).hexdigest()
     return  '%s,%s' % (salt, hashed_pw)
 
 def valid_pw(name, password, hashed_pw):
+        # Obtain salt
     salt = hashed_pw.split(',')[0]
     return hashed_pw == make_pw_hash(name, password, salt)
 
@@ -168,7 +171,7 @@ class PostHandler(Handler):
         post = db.get(post_key)
         comments = Comment.all()
         comments_in_post = comments.filter('post =', post)
-        self.render("post.html", blog_post = blog_post, comments_in_post = comments_in_post)
+        self.render("permalink.html", post = post, comments_in_post = comments_in_post)
 
 #Signup
 class SignupHandler(Handler):

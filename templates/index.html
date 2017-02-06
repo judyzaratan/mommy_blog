@@ -29,28 +29,25 @@
     <!-- Navigation -->
     <nav class="navbar">
         <!-- Collect the nav links, forms, and other content for toggling -->
-           <ul class="nav nav-tabs">
-             <li><a href="/">Home</a></li>
-             {% if user %}
-             <span>Signed in as {{user.user}}</span>
-             <li><a href="/newpost">New Post</a></li>
-             <li><a href="/logout">Sign Out</a></li>
-             {% else %}
-             <li><a href="/signup">Sign Up</a></li>
-             <li><a href="/login">Sign In</a></li>
-             {% endif %}
-           </ul>
-           <!-- <ul class="nav nav-tabs">
-              {% for href, caption in links %}
-            <li><a href="{{ href }}">{{ caption }}</a></li>
-            {% endfor %}
-          </ul> -->
+       <ul class="nav nav-tabs">
+         <li><a href="/">Home</a></li>
+         {% if user %}
+         <li><span>Signed in as {{user.user}}</span></li>
+         <li><a href="/newpost">New Post</a></li>
+         <li><a href="/logout">Sign Out</a></li>
+         {% else %}
+         <li><a href="/signup">Sign Up</a></li>
+         <li><a href="/login">Sign In</a></li>
+         {% endif %}
+       </ul>
     </nav>
-<div class="container content">
 
-{% block content%}
-  <h1>Welcome {{username}}</h1>
-{% endblock %}
-</div>
+    <!-- Content -->
+    <div class="container content">
+
+    {% block content%}
+      <h1>Welcome {{username}}</h1>
+    {% endblock %}
+    </div>
   </body>
 </html>
