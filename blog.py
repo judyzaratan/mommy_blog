@@ -150,13 +150,14 @@ class BlogHandler(Handler):
         self.render("blog.html", posts = posts)
 
     def post(self):
-        post = self.request.get('post_comment')
+        post_id = self.request.get('post_id')
         task = self.request.get('task')
-        if task == 'Comment':
-            query_params = {'post': post}
+        print task
+        if task == 'comment':
+            query_params = {'post': post_id}
             link = '/comment?'
             self.redirect(link + urllib.urlencode(query_params))
-        if task == 'Like':
+        if task == 'like':
             post_id = Post.get_by_id(int(post))
             c = Likes(parent = post_id, user = self.user, post = post_id)
             c.put()
