@@ -3,6 +3,10 @@
 <div class="blog">
   {% for entry in posts%}
     {{entry.render()|safe}}
+    <button class="btn" type="button" name="button">Edit</button>
+    <button class="btn" type="button" name="button">Comment</button>
+    <button class="btn" type="button" name="button">Like</button>
+    <button class="btn" type="button" name="button">Delete</button>
   {% endfor %}
 </div>
 {% endblock %}
