@@ -140,15 +140,7 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
-#Page displays blog posts
-class BlogHandler(Handler):
-    def get(self):
-        user = self.request.get('user_id')
-        username = self.read_secure_cookie(user)
-        posts = Post.all().order('-created')
-        self.render("blog.html", posts = posts, username = username)
-
-    def post(self):
+    def post_edit(self):
         post_id = self.request.get('post_id')
         task = self.request.get('task')
         print task
@@ -162,6 +154,18 @@ class BlogHandler(Handler):
             c.put()
             self.redirect("/")
 
+#Page displays blog posts
+class BlogHandler(Handler):
+    def get(self):
+        user = self.request.get('user_id')
+        username = self.read_secure_cookie(user)
+        posts = Post.all().order('-created')
+        self.render("blog.html", posts = posts, username = username)
+
+    def post(self):
+        self.post_edit()
+
+
 #Single post display
 class PostHandler(Handler):
     def get(self, blog_id):
@@ -171,7 +175,10 @@ class PostHandler(Handler):
         post = db.get(post_key)
         comments = Comment.all()
         comments_in_post = comments.filter('post =', post)
-        self.render("permalink.html", post = post, comments_in_post = comments_in_post)
+        self.render("permalink.html", entry = post, comments_in_post = comments_in_post)
+
+    def post(self, blog_id):
+        self.post_edit()
 
 #Signup
 class SignupHandler(Handler):

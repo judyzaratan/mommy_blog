@@ -1,0 +1,9 @@
+<form class="edits" method="post">
+  <input type="hidden" name="post_id" value="{{entry.key().id()}}">
+  {% if user.user == entry.user.user %}
+    <button class="btn" type="submit" name="task" value="edit">Edit</button>
+    <button class="btn" type="submit" name="task" value="delete">Delete</button>
+  {%endif%}
+<button class="btn" type="submit" name="task" value="comment">Comment</button>
+<button class="btn" type="submit" name="task" value="like">Like</button>
+</form>

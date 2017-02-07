@@ -1,7 +1,8 @@
 {% extends "index.html" %}
 
 {% block content %}
-  {{post.render() | safe}}
+  {{entry.render() | safe}}
+  {% include 'editForm.html'%}
 
   <h2>Comments</h2>
   {% for comment in comments_in_post%}
