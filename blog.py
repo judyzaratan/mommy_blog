@@ -143,8 +143,10 @@ class Handler(webapp2.RequestHandler):
 #Page displays blog posts
 class BlogHandler(Handler):
     def get(self):
+        user = self.request.get('user_id')
+        username = self.read_secure_cookie(user)
         posts = Post.all().order('-created')
-        self.render("blog.html", posts = posts)
+        self.render("blog.html", posts = posts, username = username)
 
     def post(self):
         post_id = self.request.get('post_id')
