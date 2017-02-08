@@ -153,13 +153,31 @@ class Handler(webapp2.RequestHandler):
             c = Likes(parent = post_id, user = self.user, post = post_id)
             c.put()
             self.redirect("/")
+        if task == 'delete':
+            db.delete(Post.get_by_id(int(post_id)))
+            self.redirect('/')
+            user = self.request.get('user_id')
+            username = self.read_secure_cookie(user)
+            posts = Post.all().order('-created')
+            for post in posts:
+                print post.key().id()
+            print 'posts'
+
+            self.render("blog.html", posts = posts, username = username)
+
+
 
 #Page displays blog posts
 class BlogHandler(Handler):
     def get(self):
+        print 'it got refreshed'
         user = self.request.get('user_id')
         username = self.read_secure_cookie(user)
         posts = Post.all().order('-created')
+        for post in posts:
+            print post.key().id()
+        print 'posts'
+
         self.render("blog.html", posts = posts, username = username)
 
     def post(self):
