@@ -140,19 +140,19 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
-    def post_edit(self):
-        post_id = self.request.get('post_id')
-        task = self.request.get('task')
-        print task
-        if task == 'comment':
-            query_params = {'post': post_id}
-            link = '/newcomment?'
-            self.redirect(link + urllib.urlencode(query_params))
-        if task == 'like':
-            post_id = Post.get_by_id(int(post))
-            c = Likes(parent = post_id, user = self.user, post = post_id)
-            c.put()
-            self.redirect("/")
+    # def post_edit(self):
+    #     post_id = self.request.get('post_id')
+    #     task = self.request.get('task')
+    #     print task
+    #     if task == 'comment':
+    #         query_params = {'post': post_id}
+    #         link = '/newcomment?'
+    #         self.redirect(link + urllib.urlencode(query_params))
+    #     if task == 'like':
+    #         post_id = Post.get_by_id(int(post))
+    #         c = Likes(parent = post_id, user = self.user, post = post_id)
+    #         c.put()
+    #         self.redirect("/")
 
 
 class DeletePostHandler(Handler):
@@ -346,7 +346,7 @@ class CommentHandler(Handler):
     def post(self):
         path = self.request.get('button')
         comment = self.request.get('comment')
-        p = self.request.get('post')
+        p = self.request.get('post_id')
         print p + 'comment'
         post_id = Post.get_by_id(int(p))
         user = self.user
