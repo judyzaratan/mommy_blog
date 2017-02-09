@@ -153,18 +153,13 @@ class Handler(webapp2.RequestHandler):
             c = Likes(parent = post_id, user = self.user, post = post_id)
             c.put()
             self.redirect("/")
-        if task == 'delete':
-            db.delete(Post.get_by_id(int(post_id)))
-            self.redirect('/')
-            user = self.request.get('user_id')
-            username = self.read_secure_cookie(user)
-            posts = Post.all().order('-created')
-            for post in posts:
-                print post.key().id()
-            print 'posts'
 
-            self.render("blog.html", posts = posts, username = username)
 
+class DeletePostHandler(Handler):
+    def post(self):
+        post_id = self.request.get('post_id')
+        db.delete(Post.get_by_id(int(post_id)))
+        self.render("deletedPost.html")
 
 
 #Page displays blog posts
@@ -173,15 +168,12 @@ class BlogHandler(Handler):
         print 'it got refreshed'
         user = self.request.get('user_id')
         username = self.read_secure_cookie(user)
-        posts = Post.all().order('-created')
+        posts = db.Query(Post).order('-created')
         for post in posts:
             print post.key().id()
         print 'posts'
-
         self.render("blog.html", posts = posts, username = username)
 
-    def post(self):
-        self.post_edit()
 
 
 #Single post display
@@ -277,8 +269,6 @@ class LoginHandler(Handler):
         database_query = User.all().filter('user =', user_name).get()
         if database_query:
             password_check = valid_pw(user_name, user_password, database_query.password)
-        # print "password check" + str(password_check)
-
 
         if (database_query) and  (user_name == database_query.user and password_check):
             self.response.headers['Content-Type'] = "text/plain"
@@ -292,7 +282,6 @@ class LoginHandler(Handler):
 
 class WelcomeHandler(Handler):
     def get(self):
-        print "welcome handler"
         cookie = self.request.cookies.get("user_id")
         id_check = check_secure_val(cookie)
         print id_check
@@ -300,12 +289,20 @@ class WelcomeHandler(Handler):
             username = User.get_by_id(int(id_check)).user
             self.render("welcome.html", username = username)
 
-class NewPostHandler(Handler):
-    def render_newpost(self, subject="", content="", error=""):
-        self.render("newPost.html", subject=subject, content=content, error=error)
+class EditPostHandler(Handler):
+    def render_newpost(self, subject="", content="", error="", edittype="New"):
+        self.render("newPost.html", subject=subject, content=content, error=error, edittype=edittype)
 
     def get(self):
-        if self.user:
+        if self.user and self.request.get("post_id"):
+            post_id = self.request.get("post_id")
+            blog_post = Post.get_by_id(int(post_id))
+            post_key = blog_post.key()
+            print str(post_key)
+            post = db.get(post_key)
+            self.render_newpost(subject=post.subject, content=post.content, edittype="Edit")
+
+        elif self.user:
             self.render_newpost()
         else:
             self.redirect("/login")
@@ -313,14 +310,23 @@ class NewPostHandler(Handler):
     def post(self):
         subject = self.request.get("subject")
         content = self.request.get("content")
+        post_id = self.request.get("post_id")
 
         cookie = self.request.cookies.get("user_id")
         id_check = check_secure_val(cookie)
         if id_check:
             user = User.get_by_id(int(id_check))
 
-        if subject and content:
-            b = Post(subject = subject, content = content, user = user)
+        if subject and content and post_id:
+            post = Post.get_by_id(int(post_id))
+            post.subject = subject
+            post.content = content
+            k = post.put()
+            index = k.id()
+            link = "/" + str(index)
+            self.redirect(link)
+        elif subject and content and not post_id:
+            b = Post(subject = subject, content=content, user=user)
             k = b.put()
             index = k.id()
             link = "/" + str(index)
@@ -328,6 +334,7 @@ class NewPostHandler(Handler):
         else:
             error = "We both need a subject and a post"
             self.render_newpost(subject=subject, content=content, error=error)
+
 
 class CommentHandler(Handler):
     def get(self):
@@ -363,5 +370,6 @@ app = webapp2.WSGIApplication([('/', BlogHandler),
                                 ('/login', LoginHandler),
                                 ('/logout', LogoutHandler),
                                 ('/(\d+)', PostHandler),
-                                ('/newpost', NewPostHandler),
+                                ('/newpost', EditPostHandler),
+                                ('/deletepost', DeletePostHandler),
                                 ('/newcomment', CommentHandler)], debug=True)

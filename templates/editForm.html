@@ -1,9 +1,12 @@
-<form class="edits" method="post">
-  <input type="hidden" name="post_id" value="{{entry.key().id()}}">
+
   {% if user.user == entry.user.user %}
-    <button class="btn" type="submit" name="task" value="edit">Edit</button>
+  <form class="" action="/deletepost" method="post">
+    <input type="hidden" name="post_id" value="{{entry.key().id()}}">
     <button class="btn" type="submit" name="task" value="delete">Delete</button>
+  </form>
+  <form class="" action="/newpost" method="get">
+    <input type="hidden" name="post_id" value="{{entry.key().id()}}">
+    <button class="btn" type="submit" name="task" value="edit">Edit</button>
+  </form>
   {%endif%}
-<button class="btn" type="submit" name="task" value="comment">Comment</button>
-<button class="btn" type="submit" name="task" value="like">Like</button>
 </form>
