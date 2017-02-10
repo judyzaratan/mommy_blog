@@ -3,9 +3,15 @@
 {% block content %}
   {{entry.render() | safe}}
   {% include 'editForm.html'%}
+  {% set edittype = "Comment"%}
+  {% include 'commentlikeForm.html'%}
 
   <h2>Comments</h2>
   {% for comment in comments_in_post%}
     {{comment.render()|safe}}
-    {% endfor %}
+    {% if user.user == comment.user.user %}
+      {% set edittype = "Edit"%}
+      {% include 'commentlikeForm.html'%}
+    {% endif %}
+  {% endfor %}
 {% endblock %}

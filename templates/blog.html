@@ -4,6 +4,8 @@
   {% for entry in posts%}
     {{entry.render()|safe}}
     {% include 'editForm.html'%}
+    {% set edittype="Comment" %}
+    {% include 'commentlikeForm.html'%}
 
   {% endfor %}
 </div>
