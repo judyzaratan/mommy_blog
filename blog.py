@@ -187,8 +187,6 @@ class PostHandler(Handler):
         comments_in_post = comments.filter('post =', post)
         self.render("permalink.html", entry = post, comments_in_post = comments_in_post)
 
-    def post(self, blog_id):
-        self.post_edit()
 
 #Signup
 class SignupHandler(Handler):
@@ -338,16 +336,24 @@ class EditPostHandler(Handler):
 
 class CommentHandler(Handler):
     def get(self):
-        if self.user:
-            self.render("newComment.html")
+        comment_id = self.request.get("comment_id")
+
+        post_id = self.request.get("post_id")
+        if self.user and self.request.get("comment_id"):
+            post = Post.get_by_id(int(post_id))
+            editcomment= Comment.get_by_id(int(comment_id), parent=post)
+            self.render('newComment.html', comment_text = editcomment.content, post_id=post_id)
+            # self.render(comment_text=comment.content)
+        elif self.user:
+            self.render("newComment.html", post_id=post_id)
         else:
-            self.redirect("/")
+            self.redirect('/')
+
 
     def post(self):
         path = self.request.get('button')
         comment = self.request.get('comment')
-        p = self.request.get('post_id')
-        print p + 'comment'
+        p=self.request.get('post_id')
         post_id = Post.get_by_id(int(p))
         user = self.user
         if path == "Submit":

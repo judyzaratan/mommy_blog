@@ -3,10 +3,11 @@
 {% block content %}
 <div class="comment">
   <h1>Comment</h1>
-  <form class="" method="post">
+  <form class="" action="/newcomment" method="post">
+    <input type="hidden" name="post_id" value="{{post_id}}">
     <label for="comment">Comment</label>
     <br>
-    <textarea name="comment" rows="4" cols="50"></textarea>
+    <textarea name="comment" rows="4" cols="50">{{comment_text}}</textarea>
     <br>
     <input type="submit" name="button" value="Submit">
     <input type="submit" name="button" value="Cancel">

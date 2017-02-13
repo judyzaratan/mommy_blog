@@ -11,6 +11,7 @@
     {{comment.render()|safe}}
     {% if user.user == comment.user.user %}
       {% set edittype = "Edit"%}
+
       {% include 'commentlikeForm.html'%}
     {% endif %}
   {% endfor %}
