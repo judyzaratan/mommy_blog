@@ -103,7 +103,7 @@ class Comment(db.Model):
 #Likes
 class Likes(db.Model):
     user = db.ReferenceProperty(User)
-    post = db.ReferenceProperty(Post, collection_name="likes_set")
+    post = db.ReferenceProperty(Post)
 
 # Request handler
 """Initialize handler instance with req and res objects"""
@@ -370,10 +370,19 @@ class LogoutHandler(Handler):
         self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
         self.redirect('/signup')
 
+class LikesHandler(Handler):
+    def post(self):
+        post_id = self.request.get('post_id')
+        post = Post.get_by_id(int(post_id))
+        l = Likes(parent = post, user=self.user, post=post)
+        e = l.put()
+        self.redirect("/")
+
 app = webapp2.WSGIApplication([('/', BlogHandler),
                                 ('/welcome', WelcomeHandler),
                                 ('/signup', SignupHandler),
                                 ('/login', LoginHandler),
+                                ('/likes', LikesHandler),
                                 ('/logout', LogoutHandler),
                                 ('/(\d+)', PostHandler),
                                 ('/newpost', EditPostHandler),
