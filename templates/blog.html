@@ -1,7 +1,7 @@
 {% extends "index.html"%}
 {% block content %}
 <div class="blog">
-  {% for entry in posts%}
+  {% for entry in posts %}
     {{entry.render()|safe}}
     {% include 'editForm.html'%}
     {% set edittype="Comment" %}

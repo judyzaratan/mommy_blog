@@ -34,11 +34,11 @@
          {% if user %}
          <li><a href="/newpost">New Post</a></li>
          <li><a href="/logout">Sign Out</a></li>
+         <li class="disabled"><a href="#">Signed in as {{user.user}}</a></li>
          {% else %}
          <li><a href="/signup">Sign Up</a></li>
          <li><a href="/login">Sign In</a></li>
          {% endif %}
-         <li class="disabled"><a href="#">Signed in as {{user.user}}</a></li>
        </ul>
     </nav>
 
