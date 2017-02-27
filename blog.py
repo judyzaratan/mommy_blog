@@ -33,6 +33,9 @@ def make_salt():
     """
     return ''.join(random.choice(string.letters) for x in xrange(5))
 
+    ##xrange function is the same as range but returns an xrange object that
+    ## uses same amount of memory regardless of size
+
 def make_pw_hash(name, pw, salt = None):
     """
     Hashes password
@@ -87,7 +90,8 @@ class Post(db.Model):
 
     """ Renders individual post using post template"""
     def render(self):
-        return render_str("post.html", blog_post = self)
+        likes = Likes.all().ancestor(self.key()).count()
+        return render_str("post.html", blog_post = self, likes = likes)
 
 #Comment
 class Comment(db.Model):
@@ -104,6 +108,7 @@ class Comment(db.Model):
 class Likes(db.Model):
     user = db.ReferenceProperty(User)
     post = db.ReferenceProperty(Post)
+
 
 # Request handler
 """Initialize handler instance with req and res objects"""
@@ -150,10 +155,13 @@ class DeletePostHandler(Handler):
 #Page displays blog posts
 class BlogHandler(Handler):
     def get(self):
-        print 'it got refreshed'
         user = self.request.get('user_id')
         username = self.read_secure_cookie(user)
         posts = db.Query(Post).order('-created')
+        #get number of likes for each post
+        for post in posts:
+            print Likes.all().ancestor(post).count()
+
         self.render("blog.html", posts = posts, username = username)
 
 #Single post display
@@ -161,7 +169,6 @@ class PostHandler(Handler):
     def get(self, blog_id):
         blog_post = Post.get_by_id(int(blog_id))
         post_key = blog_post.key()
-        print str(post_key)
         post = db.get(post_key)
         comments = Comment.all()
         comments_in_post = comments.filter('post =', post)

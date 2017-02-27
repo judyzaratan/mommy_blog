@@ -1,11 +1,11 @@
 
-  {% if user.user == entry.user.user %}
-  <form class="" action="/deletepost" method="post">
-    <input type="hidden" name="post_id" value="{{entry.key().id()}}">
-    <button class="btn" type="submit" name="task" value="delete">Delete</button>
-  </form>
-  <form class="" action="/newpost" method="get">
-    <input type="hidden" name="post_id" value="{{entry.key().id()}}">
-    <button class="btn" type="submit" name="task" value="edit">Edit</button>
-  </form>
-  {%endif%}
+{% if user.user == entry.user.user %}
+<form class="" action="/deletepost" method="post">
+  <input type="hidden" name="post_id" value="{{entry.key().id()}}">
+  <button class="btn" type="submit" name="task" value="delete">Delete</button>
+</form>
+<form class="" action="/newpost" method="get">
+  <input type="hidden" name="post_id" value="{{entry.key().id()}}">
+  <button class="btn" type="submit" name="task" value="edit">Edit</button>
+</form>
+{%endif%}

@@ -1,4 +1,7 @@
+{% if user.user != entry.user.user %}
 <form class="" action="/likes" method="post">
   <input type="hidden" name="post_id" value="{{entry.key().id()}}">
   <button class="btn" type="submit" name="task" value="like">Like</button>
 </form>
+
+{% endif %}
