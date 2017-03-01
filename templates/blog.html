@@ -1,12 +1,9 @@
 {% extends "index.html"%}
 {% block content %}
-<div class="blog">
+  <div class="blog">
   {% for entry in posts %}
     {{entry.render()|safe}}
     {% include 'editForm.html'%}
-    {% set edittype="Comment" %}
-    {% include 'commentlikeForm.html'%}
-    {% include 'likes.html'%}
   {% endfor %}
-</div>
+  </div>
 {% endblock %}

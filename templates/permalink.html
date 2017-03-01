@@ -3,17 +3,11 @@
 {% block content %}
   {{entry.render() | safe}}
   {% include 'editForm.html'%}
-  {% set edittype = "Comment"%}
-  {% include 'commentlikeForm.html'%}
 
   <h2>Comments</h2>
-  {% for comment in comments_in_post%}
-    {{comment.render()|safe}}
-    {% if user.user == comment.user.user %}
-      {% set edittype = "Edit"%}
-
-      {% include 'commentlikeForm.html'%}
-      {% include 'likes.html'%}
-    {% endif %}
+  {% for entry in comments_in_post%}
+    {{entry.render()|safe}}
+    {% set show_comment = False %}
+    {% include 'editForm.html'%}
   {% endfor %}
 {% endblock %}

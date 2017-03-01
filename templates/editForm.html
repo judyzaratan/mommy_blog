@@ -1,11 +1,15 @@
-
-{% if user.user == entry.user.user %}
-<form class="" action="/deletepost" method="post">
+<form class="" action="/" method="get">
+  <p style="color:red">{{error_msg}}</p>
   <input type="hidden" name="post_id" value="{{entry.key().id()}}">
-  <button class="btn" type="submit" name="task" value="delete">Delete</button>
+  {% if show_comment %}
+  <button class="btn btn-default" type="submit" formaction="/newcomment"><i class="fa fa-comment fa-fw"></i>Comment</button>
+  {% endif %}
+  {% if user.user != entry.user.user %}
+  <button class="btn btn-default" type="submit" formaction="/likes"><i class="fa fa-thumbs-o-up fa-fw"></i>Like</button>
+  {% endif %}
+  <br><br>
+  {% if user.user == entry.user.user %}
+  <button class="btn btn-default" type="submit" formaction="/newpost"><i class="fa fa-pencil fa-fw"></i>Edit</button>
+  <button class="btn btn-danger" type="submit" formaction="/deletepost"><i class="fa fa-trash fa-fw"></i>Delete</button>
+  {% endif %}
 </form>
-<form class="" action="/newpost" method="get">
-  <input type="hidden" name="post_id" value="{{entry.key().id()}}">
-  <button class="btn" type="submit" name="task" value="edit">Edit</button>
-</form>
-{%endif%}

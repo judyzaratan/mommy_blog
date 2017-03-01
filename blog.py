@@ -146,7 +146,7 @@ class Handler(webapp2.RequestHandler):
         self.write(self.render_str(template, **kw))
 
 class DeletePostHandler(Handler):
-    def post(self):
+    def get(self):
         post_id = self.request.get('post_id')
         db.delete(Post.get_by_id(int(post_id)))
         self.render("deletedPost.html")
@@ -158,11 +158,8 @@ class BlogHandler(Handler):
         user = self.request.get('user_id')
         username = self.read_secure_cookie(user)
         posts = db.Query(Post).order('-created')
-        #get number of likes for each post
-        for post in posts:
-            print Likes.all().ancestor(post).count()
+        self.render("blog.html", posts = posts, user = username, comment = False, show_comment=True, show_like=True)
 
-        self.render("blog.html", posts = posts, username = username)
 
 #Single post display
 class PostHandler(Handler):
@@ -172,7 +169,7 @@ class PostHandler(Handler):
         post = db.get(post_key)
         comments = Comment.all()
         comments_in_post = comments.filter('post =', post)
-        self.render("permalink.html", entry = post, comments_in_post = comments_in_post)
+        self.render("permalink.html", entry = post, comments_in_post = comments_in_post, show_comment=True)
 
 #Signup
 class SignupHandler(Handler):
@@ -272,6 +269,8 @@ class WelcomeHandler(Handler):
         if id_check:
             username = User.get_by_id(int(id_check)).user
             self.render("welcome.html", username = username)
+        else:
+            self.redirect("/login")
 
 class EditPostHandler(Handler):
     def render_newpost(self, subject="", content="", error="", edittype="New"):
@@ -282,7 +281,6 @@ class EditPostHandler(Handler):
             post_id = self.request.get("post_id")
             blog_post = Post.get_by_id(int(post_id))
             post_key = blog_post.key()
-            print str(post_key)
             post = db.get(post_key)
             self.render_newpost(subject=post.subject, content=post.content, edittype="Edit")
 
@@ -323,8 +321,9 @@ class EditPostHandler(Handler):
 class CommentHandler(Handler):
     def get(self):
         comment_id = self.request.get("comment_id")
-
+        print 'commenthandler'
         post_id = self.request.get("post_id")
+        print post_id
         if self.user and self.request.get("comment_id"):
             post = Post.get_by_id(int(post_id))
             editcomment= Comment.get_by_id(int(comment_id), parent=post)
@@ -357,7 +356,7 @@ class LogoutHandler(Handler):
         self.redirect('/signup')
 
 class LikesHandler(Handler):
-    def post(self):
+    def get(self):
         post_id = self.request.get('post_id')
         post = Post.get_by_id(int(post_id))
         l = Likes(parent = post, user=self.user, post=post)
