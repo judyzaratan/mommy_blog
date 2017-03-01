@@ -1,13 +1,12 @@
 {% extends "index.html" %}
-
 {% block content %}
   {{entry.render() | safe}}
   {% include 'editForm.html'%}
-
-  <h2>Comments</h2>
+  <h4>Comments</h4>
   {% for entry in comments_in_post%}
     {{entry.render()|safe}}
     {% set show_comment = False %}
-    {% include 'editForm.html'%}
+    {% set show_like = False %}
+    {% include 'editForm.html' %}
   {% endfor %}
 {% endblock %}

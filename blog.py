@@ -115,6 +115,7 @@ class Likes(db.Model):
 """Adds user object in response"""
 class Handler(webapp2.RequestHandler):
     def initialize(self, *a, **kw):
+        print 'Initialized'
         webapp2.RequestHandler.initialize(self, *a, **kw)
         uid = self.read_secure_cookie('user_id')
         self.user = uid and User.get_by_id(int(uid))
@@ -155,71 +156,83 @@ class DeletePostHandler(Handler):
 #Page displays blog posts
 class BlogHandler(Handler):
     def get(self):
-        user = self.request.get('user_id')
-        username = self.read_secure_cookie(user)
         posts = db.Query(Post).order('-created')
-        self.render("blog.html", posts = posts, user = username, comment = False, show_comment=True, show_like=True)
+        inputs = {  "posts": posts,
+                    "user":self.user,
+                    "comment": False,
+                    "show_comment":True,
+                    "show_like":True    }
+
+        #Removes comment and like button if a user is not logged in
+        if not(self.user):
+            inputs["show_comment"] = False
+            inputs["show_like"] = False
+
+        self.render("blog.html", **inputs)
 
 
 #Single post display
 class PostHandler(Handler):
     def get(self, blog_id):
-        blog_post = Post.get_by_id(int(blog_id))
-        post_key = blog_post.key()
+        post_key = db.Key.from_path('Post', int(blog_id))
         post = db.get(post_key)
+        if not post:
+            self.error(404)
+            return
         comments = Comment.all()
         comments_in_post = comments.filter('post =', post)
-        self.render("permalink.html", entry = post, comments_in_post = comments_in_post, show_comment=True)
+        inputs = {  "entry": post,
+                    "comments_in_post": comments_in_post,
+                    "show_comment": True,
+                    "show_like": True   }
+        self.render("permalink.html", **inputs)
+
 
 #Signup
 class SignupHandler(Handler):
     def get(self):
-        user = self.request.cookies.get('user_id')
-        print user
-        if(user == "" or user == None):
+        if not self.user:
             self.render('signup.html')
         else:
             self.redirect("/welcome")
 
     def post(self):
         #User inputs
+        have_error = False
         user_name = self.request.get("username")
         user_password = self.request.get("password")
         user_verify = self.request.get("verify")
         user_email = self.request.get("email")
 
-        # Validity checks
-        name = valid_username(user_name)
-        password = valid_password(user_password)
-        if(user_email != ""):
-            email = valid_email(user_email)
-        else:
-            email = True
+        params = dict(username = user_name,
+                      email = user_email)
 
-        # Validity checks
-        error_username = ""
-        error_password = ""
-        error_email = ""
+        #Validity checks
+        if not valid_username(user_name):
+            params['error_username'] = "That is not a valid username."
+            have_error = True
 
-        if (user_password != user_verify):
-            error_verify = "Passwords do not match."
-        if not name:
-            error_username = "That's not a valid username."
-        if not password:
-            error_password = "That's not a valid password."
-        if not email:
-            error_email = "That's not a valid email."
+        if not valid_password(user_password):
+            params['error_password'] = "That is not a valid password."
+            have_error = True
+        elif user_password != user_verify:
+            params['error_verify'] = "Your passwords do not match."
+            have_error = True
+
+        if not valid_email(user_email) and not user_email == "":
+            params['error_email'] = "That is not a valid email."
+            have_error = True
 
         # Database
-        #Check if user exists
+        # Check if user exists
         username_check = User.all().filter('user =', user_name).get()
         if username_check:
-            error_username = "Username already exists"
+            params["error_username"] = "Username already exists"
+            have_error = True
+
+        if have_error:
+            self.render('signup.html', **params)
         else:
-            username_check = ""
-
-
-        if name and password and email and (user_password == user_verify) and not username_check:
             hash_pw = make_pw_hash(user_name, user_password)
 
             u = User(user = user_name, password = hash_pw, email = user_email)
@@ -230,14 +243,6 @@ class SignupHandler(Handler):
             assign_cookie = make_secure_val(u.key().id())
             self.response.headers.add_header('Set-Cookie', 'user_id=%s' % assign_cookie + '; Path:/')
             self.redirect("/welcome")
-        else:
-            self.render("signup.html", username = user_name,
-                                password = user_password,
-                                email = user_email,
-                                verify = user_verify,
-                                error_email = error_email,
-                                error_password = error_password,
-                                error_username = error_username)
 
 class LoginHandler(Handler):
     def get(self):
@@ -265,7 +270,6 @@ class WelcomeHandler(Handler):
     def get(self):
         cookie = self.request.cookies.get("user_id")
         id_check = check_secure_val(cookie)
-        print id_check
         if id_check:
             username = User.get_by_id(int(id_check)).user
             self.render("welcome.html", username = username)
@@ -321,9 +325,7 @@ class EditPostHandler(Handler):
 class CommentHandler(Handler):
     def get(self):
         comment_id = self.request.get("comment_id")
-        print 'commenthandler'
         post_id = self.request.get("post_id")
-        print post_id
         if self.user and self.request.get("comment_id"):
             post = Post.get_by_id(int(post_id))
             editcomment= Comment.get_by_id(int(comment_id), parent=post)
