@@ -93,6 +93,15 @@ class Post(db.Model):
         likes = Likes.all().ancestor(self.key()).count()
         return render_str("post.html", blog_post = self, likes = likes)
 
+    def is_liked(self, user):
+        u = Likes.all().ancestor(self.key()).filter('user =', user).count()
+        print "user function"
+        print user
+        return u
+
+
+
+
 #Comment
 class Comment(db.Model):
     user = db.ReferenceProperty(User)
@@ -118,6 +127,8 @@ class Handler(webapp2.RequestHandler):
         print 'Initialized'
         webapp2.RequestHandler.initialize(self, *a, **kw)
         uid = self.read_secure_cookie('user_id')
+        pid = self.request.get("post_id")
+        self.post_id = pid
         self.user = uid and User.get_by_id(int(uid))
 
     """Sets cookie in response header"""
@@ -268,10 +279,8 @@ class LoginHandler(Handler):
 
 class WelcomeHandler(Handler):
     def get(self):
-        cookie = self.request.cookies.get("user_id")
-        id_check = check_secure_val(cookie)
-        if id_check:
-            username = User.get_by_id(int(id_check)).user
+        if self.user:
+            username = self.user.user
             self.render("welcome.html", username = username)
         else:
             self.redirect("/login")
@@ -281,45 +290,40 @@ class EditPostHandler(Handler):
         self.render("newPost.html", subject=subject, content=content, error=error, edittype=edittype)
 
     def get(self):
-        if self.user and self.request.get("post_id"):
-            post_id = self.request.get("post_id")
-            blog_post = Post.get_by_id(int(post_id))
-            post_key = blog_post.key()
+        if self.user and self.post_id:
+            post_key = db.Key.from_path('Post', int(self.post_id))
             post = db.get(post_key)
             self.render_newpost(subject=post.subject, content=post.content, edittype="Edit")
-
         elif self.user:
             self.render_newpost()
         else:
             self.redirect("/login")
 
     def post(self):
+        if not self.user:
+            self.redirect("/login")
+
         subject = self.request.get("subject")
         content = self.request.get("content")
-        post_id = self.request.get("post_id")
+        user = self.user
+        post = self.post_id
 
-        cookie = self.request.cookies.get("user_id")
-        id_check = check_secure_val(cookie)
-        if id_check:
-            user = User.get_by_id(int(id_check))
-
-        if subject and content and post_id:
-            post = Post.get_by_id(int(post_id))
-            post.subject = subject
-            post.content = content
+        if not subject or not content:
+            error = "We both need a subject and a post"
+            self.render_newpost(subject=subject, content=content, error=error)
+        else:
+            if post:
+                """Updates existing post in database"""
+                post = Post.get_by_id(int(self.post_id))
+                post.subject = subject
+                post.content = content
+            else:
+                """Adds new post in database"""
+                post = Post(subject = subject, content=content, user=user)
             k = post.put()
             index = k.id()
             link = "/" + str(index)
             self.redirect(link)
-        elif subject and content and not post_id:
-            b = Post(subject = subject, content=content, user=user)
-            k = b.put()
-            index = k.id()
-            link = "/" + str(index)
-            self.redirect(link)
-        else:
-            error = "We both need a subject and a post"
-            self.render_newpost(subject=subject, content=content, error=error)
 
 
 class CommentHandler(Handler):

@@ -5,13 +5,19 @@
   {% if show_comment %}
   <button class="btn btn-default" type="submit" formaction="/newcomment"><i class="fa fa-comment fa-fw"></i>Comment</button>
   {% endif %}
-  {% if show_like and user.user != entry.user.user%}
+  {% if show_like and user.user != entry.user.user and not entry.is_liked(user)%}
   <button class="btn btn-default" type="submit" formaction="/likes"><i class="fa fa-thumbs-o-up fa-fw"></i>Like</button>
   {% endif %}
+  {% if entry.is_liked(user)%}
+  <button class="btn btn-default" disable type="submit"><i class="fa fa-thumbs-o-up fa-fw"></i>Liked</button>
+  {% endif %}
+
   {% if user.user == entry.user.user %}
   <br><br>
   <button class="btn btn-default" type="submit" formaction="/newpost"><i class="fa fa-pencil fa-fw"></i>Edit</button>
   <button class="btn btn-danger" type="submit" formaction="/deletepost"><i class="fa fa-trash fa-fw"></i>Delete</button>
   <br><br>
+
   {% endif %}
+
 </form>
