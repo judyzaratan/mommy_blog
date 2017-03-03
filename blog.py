@@ -158,7 +158,7 @@ class Handler(webapp2.RequestHandler):
         self.write(self.render_str(template, **kw))
 
 class DeletePostHandler(Handler):
-    def get(self):
+    def post(self):
         post_id = self.request.get('post_id')
         db.delete(Post.get_by_id(int(post_id)))
         self.render("deletedPost.html")
@@ -363,7 +363,7 @@ class LogoutHandler(Handler):
         self.redirect('/signup')
 
 class LikesHandler(Handler):
-    def get(self):
+    def post(self):
         post_id = self.request.get('post_id')
         post = Post.get_by_id(int(post_id))
         l = Likes(parent = post, user=self.user, post=post)
@@ -371,6 +371,16 @@ class LikesHandler(Handler):
         print "uri"
         print self.request.uri
         self.redirect("/")
+
+class UnlikeHandler(Handler):
+    def post(self):
+        post_id = self.request.get('post_id')
+        post = Post.get_by_id(int(post_id))
+        l = Likes.all().filter('post =', post).filter('user =', self.user)
+        print l.count()
+        for likes in l:
+            likes.delete()
+        self.redirect('/')
 
 app = webapp2.WSGIApplication([('/', BlogHandler),
                                 ('/welcome', WelcomeHandler),
@@ -381,4 +391,5 @@ app = webapp2.WSGIApplication([('/', BlogHandler),
                                 ('/(\d+)', PostHandler),
                                 ('/newpost', EditPostHandler),
                                 ('/deletepost', DeletePostHandler),
-                                ('/newcomment', CommentHandler)], debug=True)
+                                ('/newcomment', CommentHandler),
+                                ('/unlike', UnlikeHandler)], debug=True)
