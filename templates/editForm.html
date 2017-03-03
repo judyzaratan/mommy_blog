@@ -6,10 +6,10 @@
   <button class="btn btn-default" type="submit" formaction="/newcomment"><i class="fa fa-comment fa-fw"></i>Comment</button>
   {% endif %}
   {% if show_like and user.user != entry.user.user and not entry.is_liked(user)%}
-  <button class="btn btn-default" type="submit" formaction="/likes"><i class="fa fa-thumbs-o-up fa-fw"></i>Like</button>
+  <button class="btn btn-primary" type="submit" formaction="/likes"><i class="fa fa-thumbs-o-up fa-fw"></i>Like</button>
   {% endif %}
-  {% if entry.is_liked(user)%}
-  <button class="btn btn-default" disable type="submit"><i class="fa fa-thumbs-o-up fa-fw"></i>Liked</button>
+  {% if show_like and entry.is_liked(user)%}
+  <button class="btn btn-default " type="submit"><i class="fa fa-thumbs-o-up fa-fw"></i>Unlike</button>
   {% endif %}
 
   {% if user.user == entry.user.user %}

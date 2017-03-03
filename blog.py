@@ -199,6 +199,7 @@ class PostHandler(Handler):
         self.render("permalink.html", **inputs)
 
 
+
 #Signup
 class SignupHandler(Handler):
     def get(self):
@@ -367,6 +368,8 @@ class LikesHandler(Handler):
         post = Post.get_by_id(int(post_id))
         l = Likes(parent = post, user=self.user, post=post)
         e = l.put()
+        print "uri"
+        print self.request.uri
         self.redirect("/")
 
 app = webapp2.WSGIApplication([('/', BlogHandler),
