@@ -286,6 +286,7 @@ class WelcomeHandler(Handler):
         else:
             self.redirect("/login")
 
+
 class EditPostHandler(Handler):
     def render_newpost(self, subject="", content="", error="", edittype="New"):
         self.render("newPost.html", subject=subject, content=content, error=error, edittype=edittype)
@@ -341,7 +342,6 @@ class CommentHandler(Handler):
         else:
             self.redirect('/')
 
-
     def post(self):
         path = self.request.get('button')
         comment = self.request.get('comment')
@@ -356,6 +356,16 @@ class CommentHandler(Handler):
         if path == "Cancel":
             link = '/' + p
             self.redirect(link)
+
+class DeleteCommentHandler(Handler):
+    def post(self):
+        comment_id = self.request.get("comment_id")
+        post_id = self.request.get("post")
+        comment_key = db.Key.from_path('Comment', int(comment_id))
+        comment = Comment.get_by_id(int(comment_id))
+        post = db.Key.from_path('Post', int(post_id))
+        Comment.get_by_id(int(comment_id), parent=post).delete()
+        self.redirect("/")
 
 class LogoutHandler(Handler):
     def get(self):
@@ -392,4 +402,5 @@ app = webapp2.WSGIApplication([('/', BlogHandler),
                                 ('/newpost', EditPostHandler),
                                 ('/deletepost', DeletePostHandler),
                                 ('/newcomment', CommentHandler),
+                                ('/deletecomment', DeleteCommentHandler),
                                 ('/unlike', UnlikeHandler)], debug=True)
