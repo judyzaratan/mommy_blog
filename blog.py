@@ -160,7 +160,16 @@ class Handler(webapp2.RequestHandler):
 class DeletePostHandler(Handler):
     def post(self):
         post_id = self.request.get('post_id')
-        db.delete(Post.get_by_id(int(post_id)))
+        post = Post.get_by_id(int(post_id))
+        comments = Comment.all().ancestor(post.key())
+        if comments != None:
+            for comment in comments:
+                comment.delete()
+        likes = Likes.all().ancestor(post.key())
+        if likes != None:
+            for like in likes:
+                like.delete()
+        db.delete(post)
         self.render("deletedPost.html")
 
 
