@@ -42,3 +42,4 @@ $ gcloud app browse
 Open browser and link to http://localhost:8080/blog
 
 Live example:
+https://blog-153106.appspot.com/
