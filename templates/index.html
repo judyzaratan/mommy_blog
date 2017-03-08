@@ -24,7 +24,7 @@
     integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
     crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-
+  <link type="text/css" rel="stylesheet" href="/static/main.css">
   </head>
   <body>
     <!-- Navigation -->
@@ -35,7 +35,7 @@
          {% if user %}
          <li><a href="/newpost">New Post</a></li>
          <li><a href="/logout">Sign Out</a></li>
-         <li class="disabled"><a href="#">Signed in as {{user.user}}</a></li>
+         <li><a>Signed in as {{user.user}}</a></li>
          {% else %}
          <li><a href="/signup">Sign Up</a></li>
          <li><a href="/login">Sign In</a></li>

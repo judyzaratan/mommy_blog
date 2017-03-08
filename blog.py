@@ -95,12 +95,6 @@ class Post(db.Model):
 
     def is_liked(self, user):
         u = Likes.all().ancestor(self.key()).filter('user =', user).count()
-        print "user function"
-        print user
-        return u
-
-
-
 
 #Comment
 class Comment(db.Model):
@@ -124,7 +118,6 @@ class Likes(db.Model):
 """Adds user object in response"""
 class Handler(webapp2.RequestHandler):
     def initialize(self, *a, **kw):
-        print 'Initialized'
         webapp2.RequestHandler.initialize(self, *a, **kw)
         uid = self.read_secure_cookie('user_id')
         pid = self.request.get("post_id")
@@ -387,8 +380,6 @@ class LikesHandler(Handler):
         post = Post.get_by_id(int(post_id))
         l = Likes(parent = post, user=self.user, post=post)
         e = l.put()
-        print "uri"
-        print self.request.uri
         self.redirect("/")
 
 class UnlikeHandler(Handler):
@@ -396,7 +387,6 @@ class UnlikeHandler(Handler):
         post_id = self.request.get('post_id')
         post = Post.get_by_id(int(post_id))
         l = Likes.all().filter('post =', post).filter('user =', self.user)
-        print l.count()
         for likes in l:
             likes.delete()
         self.redirect('/')
