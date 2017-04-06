@@ -21,8 +21,8 @@ template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
                                autoescape = True)
 
-# Returns rendered template with dictionary input params
 def render_str(template, **params):
+    """Returns rendered template with dictionary input parameters"""
     t = jinja_env.get_template(template)
     return t.render(params)
 
@@ -88,8 +88,8 @@ class Post(db.Model):
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
-    """ Renders individual post using post template"""
     def render(self):
+        """ Renders individual post using post template"""
         likes = Likes.all().ancestor(self.key()).count()
         return render_str("post.html", blog_post = self, likes = likes)
 
@@ -103,8 +103,8 @@ class Comment(db.Model):
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
 
-    """ Renders individual comment using comment template"""
     def render(self):
+        """ Renders individual comment using comment template"""
         return render_str("comment.html", comment = self)
 
 #Likes
@@ -114,56 +114,60 @@ class Likes(db.Model):
 
 
 # Request handler
-"""Initialize handler instance with req and res objects"""
-"""Adds user object in response"""
 class Handler(webapp2.RequestHandler):
     def initialize(self, *a, **kw):
+        """Initialize handler instance with req and res objects"""
         webapp2.RequestHandler.initialize(self, *a, **kw)
         uid = self.read_secure_cookie('user_id')
         pid = self.request.get("post_id")
         self.post_id = pid
         self.user = uid and User.get_by_id(int(uid))
 
-    """Sets cookie in response header"""
     def set_secure_cookie(self, name, val):
+        """Sets cookie in response header"""
         cookie_val = make_secure_val(val)
         self.response.headers.add_header(
             'Set-Cookie',
             '%s=%s; Path=/' % (name, cookie_val))
 
-    """Validates cookie read in response header"""
     def read_secure_cookie(self, name):
+        """Validates cookie read in response header"""
         cookie_val = self.request.cookies.get(name)
         return cookie_val and check_secure_val(cookie_val)
 
-    """Simplifies write function"""
     def write(self, *a, **kw):
+        """Simplifies write function"""
         self.response.out.write(*a, **kw)
 
-    """Render dictionary parameters on templates as text"""
     def render_str(self, template, **params):
+        """Render dictionary parameters on templates as text"""
         params['user'] = self.user
         t = jinja_env.get_template(template)
         return t.render(params)
 
-    """Writes rendered template to response"""
     def render(self, template, **kw):
+        """Writes rendered template to response"""
         self.write(self.render_str(template, **kw))
 
 class DeletePostHandler(Handler):
     def post(self):
         post_id = self.request.get('post_id')
         post = Post.get_by_id(int(post_id))
-        comments = Comment.all().ancestor(post.key())
-        if comments != None:
-            for comment in comments:
-                comment.delete()
-        likes = Likes.all().ancestor(post.key())
-        if likes != None:
-            for like in likes:
-                like.delete()
-        db.delete(post)
-        self.render("deletedPost.html")
+        if self.user:
+            if self.user == post.user:
+                comments = Comment.all().ancestor(post.key())
+                likes = Likes.all().ancestor(post.key())
+                if comments != None:
+                    for comment in comments:
+                        comment.delete()
+                if likes != None:
+                    for like in likes:
+                        like.delete()
+                        db.delete(post)
+                self.render("deletedPost.html")
+
+        else:
+            self.redirect("/login")
 
 
 #Page displays blog posts
@@ -254,8 +258,7 @@ class SignupHandler(Handler):
 
             self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
-            assign_cookie = make_secure_val(u.key().id())
-            self.response.headers.add_header('Set-Cookie', 'user_id=%s' % assign_cookie + '; Path:/')
+            self.set_secure_cookie('user_id', k.key().id())
             self.redirect("/welcome")
 
 class LoginHandler(Handler):
@@ -271,10 +274,8 @@ class LoginHandler(Handler):
             password_check = valid_pw(user_name, user_password, database_query.password)
 
         if (database_query) and  (user_name == database_query.user and password_check):
-            self.response.headers['Content-Type'] = "text/plain"
             username = str(user_name)
-            assign_cookie = make_secure_val(database_query.key().id())
-            self.response.headers.add_header('Set-Cookie', 'user_id=%s' % assign_cookie + '; Path:/')
+            self.set_secure_cookie('user_id', database_query.key().id())
             self.redirect("/welcome")
         else:
             error_msg = "Invalid credentials"
@@ -305,7 +306,7 @@ class EditPostHandler(Handler):
 
     def post(self):
         if not self.user:
-            self.redirect("/login")
+            return self.redirect("/login")
 
         subject = self.request.get("subject")
         content = self.request.get("content")
