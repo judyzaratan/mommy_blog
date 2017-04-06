@@ -336,6 +336,7 @@ class CommentHandler(Handler):
         comment_id = self.request.get("comment_id")
         post_id = self.request.get("post_id")
         if self.user and self.request.get("comment_id"):
+            print "it got here"
             post = Post.get_by_id(int(post_id))
             editcomment= Comment.get_by_id(int(comment_id), parent=post)
             self.render('newComment.html', comment_text = editcomment.content, post_id=post_id)
