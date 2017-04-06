@@ -307,28 +307,28 @@ class EditPostHandler(Handler):
     def post(self):
         if not self.user:
             return self.redirect("/login")
-
-        subject = self.request.get("subject")
-        content = self.request.get("content")
-        user = self.user
-        post = self.post_id
-
-        if not subject or not content:
-            error = "We both need a subject and a post"
-            self.render_newpost(subject=subject, content=content, error=error)
         else:
-            if post:
-                """Updates existing post in database"""
-                post = Post.get_by_id(int(self.post_id))
-                post.subject = subject
-                post.content = content
+            subject = self.request.get("subject")
+            content = self.request.get("content")
+            user = self.user
+            post = self.post_id
+
+            if not subject or not content:
+                error = "We both need a subject and a post"
+                self.render_newpost(subject=subject, content=content, error=error)
             else:
-                """Adds new post in database"""
-                post = Post(subject = subject, content=content, user=user)
-            k = post.put()
-            index = k.id()
-            link = "/" + str(index)
-            self.redirect(link)
+                if post:
+                    """Updates existing post in database"""
+                    post = Post.get_by_id(int(self.post_id))
+                    post.subject = subject
+                    post.content = content
+                else:
+                    """Adds new post in database"""
+                    post = Post(subject = subject, content=content, user=user)
+                k = post.put()
+                index = k.id()
+                link = "/" + str(index)
+                self.redirect(link)
 
 
 class CommentHandler(Handler):
@@ -347,29 +347,35 @@ class CommentHandler(Handler):
             self.redirect('/')
 
     def post(self):
-        path = self.request.get('button')
-        comment = self.request.get('comment')
-        p=self.request.get('post_id')
-        post_id = Post.get_by_id(int(p))
-        user = self.user
-        if path == "Submit":
-            o = Comment(parent=post_id, user = user, content = comment, post = post_id)
-            k = o.put()
-            self.redirect('/')
+        if not self.user:
+            return self.redirect("/login")
+        else:
+            path = self.request.get('button')
+            comment = self.request.get('comment')
+            p=self.request.get('post_id')
+            post_id = Post.get_by_id(int(p))
+            user = self.user
+            if path == "Submit":
+                o = Comment(parent=post_id, user = user, content = comment, post = post_id)
+                k = o.put()
+                self.redirect('/')
 
-        if path == "Cancel":
-            link = '/' + p
-            self.redirect(link)
+            if path == "Cancel":
+                link = '/' + p
+                self.redirect(link)
 
 class DeleteCommentHandler(Handler):
     def post(self):
-        comment_id = self.request.get("comment_id")
-        post_id = self.request.get("post")
-        comment_key = db.Key.from_path('Comment', int(comment_id))
-        comment = Comment.get_by_id(int(comment_id))
-        post = db.Key.from_path('Post', int(post_id))
-        Comment.get_by_id(int(comment_id), parent=post).delete()
-        self.redirect("/")
+        if not self.user:
+            return self.redirect("/login")
+        else:
+            comment_id = self.request.get("comment_id")
+            post_id = self.request.get("post")
+            comment_key = db.Key.from_path('Comment', int(comment_id))
+            comment = Comment.get_by_id(int(comment_id))
+            post = db.Key.from_path('Post', int(post_id))
+            Comment.get_by_id(int(comment_id), parent=post).delete()
+            self.redirect("/")
 
 class LogoutHandler(Handler):
     def get(self):
@@ -378,20 +384,26 @@ class LogoutHandler(Handler):
 
 class LikesHandler(Handler):
     def post(self):
-        post_id = self.request.get('post_id')
-        post = Post.get_by_id(int(post_id))
-        l = Likes(parent = post, user=self.user, post=post)
-        e = l.put()
-        self.redirect("/")
+        if not self.user:
+            return self.redirect("/login")
+        else:
+            post_id = self.request.get('post_id')
+            post = Post.get_by_id(int(post_id))
+            l = Likes(parent = post, user=self.user, post=post)
+            e = l.put()
+            self.redirect("/")
 
 class UnlikeHandler(Handler):
     def post(self):
-        post_id = self.request.get('post_id')
-        post = Post.get_by_id(int(post_id))
-        l = Likes.all().filter('post =', post).filter('user =', self.user)
-        for likes in l:
-            likes.delete()
-        self.redirect('/')
+        if not self.user:
+            return self.redirect("/login")
+        else:
+            post_id = self.request.get('post_id')
+            post = Post.get_by_id(int(post_id))
+            l = Likes.all().filter('post =', post).filter('user =', self.user)
+            for likes in l:
+                likes.delete()
+            self.redirect('/')
 
 app = webapp2.WSGIApplication([('/', BlogHandler),
                                 ('/welcome', WelcomeHandler),
